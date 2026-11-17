@@ -1,7 +1,7 @@
 #ifndef JAM_CLOCK_SYSTEM_H
 #define JAM_CLOCK_SYSTEM_H
 
-#include "config.h"
+#include "../config/config.h"
 
 // --- FORMAT JAM TANPA STRFTIME ---
 String formatDuaDigit(int angka) {
