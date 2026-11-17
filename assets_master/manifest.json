@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 2,
+  "generator": "Neo Clock UI Asset Generator",
+  "style": {
+    "id": "horology-bezel-ui",
+    "name": "Chronos Horology UI",
+    "category": "Horologi & Elegan"
+  },
+  "colors": {
+    "foreground": "#FFFFFF",
+    "background": "#000000"
+  },
+  "outputDimensions": {
+    "mode": "per-asset",
+    "customSizes": {},
+    "nativeFallback": true
+  },
+  "renderOptions": {
+    "strokeScale": 1,
+    "padding": 1,
+    "pixelSnap": true,
+    "threshold": 128,
+    "batteryLevel": 80,
+    "signalLevel": 3,
+    "wifiLevel": 3,
+    "progressPercent": 72,
+    "progressBarPercent": 65
+  },
+  "groups": {
+    "dynamic": {
+      "assets": [
+        {
+          "id": "battery",
+          "name": "Indikator Baterai",
+          "width": 36,
+          "height": 20,
+          "frameCount": 11,
+          "values": [
+            0,
+            10,
+            20,
+            30,
+            40,
+            50,
+            60,
+            70,
+            80,
+            90,
+            100
+          ]
+        },
+        {
+          "id": "signal",
+          "name": "Bar Sinyal GPS / LTE",
+          "width": 28,
+          "height": 24,
+          "frameCount": 4,
+          "values": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "id": "wifi-meter",
+          "name": "Wi-Fi dengan Meter Sinyal",
+          "width": 28,
+          "height": 24,
+          "frameCount": 4,
+          "values": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "id": "progress-arc",
+          "name": "Cincin Progres Aktivitas",
+          "width": 48,
+          "height": 48,
+          "frameCount": 21,
+          "values": [
+            0,
+            5,
+            10,
+            15,
+            20,
+            25,
+            30,
+            35,
+            40,
+            45,
+            50,
+            55,
+            60,
+            65,
+            70,
+            75,
+            80,
+            85,
+            90,
+            95,
+            100
+          ]
+        },
+        {
+          "id": "progress-bar",
+          "name": "Progress Bar Horizontal",
+          "width": 64,
+          "height": 16,
+          "frameCount": 21,
+          "values": [
+            0,
+            5,
+            10,
+            15,
+            20,
+            25,
+            30,
+            35,
+            40,
+            45,
+            50,
+            55,
+            60,
+            65,
+            70,
+            75,
+            80,
+            85,
+            90,
+            95,
+            100
+          ]
+        },
+        {
+          "id": "heart-dynamic",
+          "name": "Jantung Dinamis",
+          "width": 28,
+          "height": 28,
+          "frameCount": 1,
+          "values": [
+            0
+          ]
+        }
+      ]
+    },
+    "static": {
+      "assets": [
+        {
+          "id": "bluetooth",
+          "name": "Koneksi Bluetooth",
+          "width": 24,
+          "height": 28
+        },
+        {
+          "id": "wifi-static",
+          "name": "Wi-Fi Statis",
+          "width": 28,
+          "height": 24
+        },
+        {
+          "id": "weather-sun",
+          "name": "Cuaca Cerah / UV",
+          "width": 28,
+          "height": 28
+        },
+        {
+          "id": "weather-moon",
+          "name": "Mode Malam / DND",
+          "width": 28,
+          "height": 28
+        },
+        {
+          "id": "alarm",
+          "name": "Alarm & Kronometer",
+          "width": 28,
+          "height": 28
+        },
+        {
+          "id": "notification",
+          "name": "Notifikasi & Peringatan",
+          "width": 28,
+          "height": 28
+        },
+        {
+          "id": "heart-static",
+          "name": "Jantung Statis",
+          "width": 28,
+          "height": 28
+        },
+        {
+          "id": "ecg-divider",
+          "name": "Gelombang Telemetry & HUD",
+          "width": 64,
+          "height": 20
+        }
+      ]
+    }
+  }
+}

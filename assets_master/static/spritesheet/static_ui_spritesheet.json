@@ -1,0 +1,66 @@
+{
+  "layout": "grid",
+  "columns": 4,
+  "sheet": {
+    "width": 268,
+    "height": 60
+  },
+  "assets": [
+    {
+      "id": "bluetooth",
+      "x": 20,
+      "y": 0,
+      "width": 24,
+      "height": 28
+    },
+    {
+      "id": "wifi-static",
+      "x": 86,
+      "y": 2,
+      "width": 28,
+      "height": 24
+    },
+    {
+      "id": "weather-sun",
+      "x": 154,
+      "y": 0,
+      "width": 28,
+      "height": 28
+    },
+    {
+      "id": "weather-moon",
+      "x": 222,
+      "y": 0,
+      "width": 28,
+      "height": 28
+    },
+    {
+      "id": "alarm",
+      "x": 18,
+      "y": 32,
+      "width": 28,
+      "height": 28
+    },
+    {
+      "id": "notification",
+      "x": 86,
+      "y": 32,
+      "width": 28,
+      "height": 28
+    },
+    {
+      "id": "heart-static",
+      "x": 154,
+      "y": 32,
+      "width": 28,
+      "height": 28
+    },
+    {
+      "id": "ecg-divider",
+      "x": 204,
+      "y": 36,
+      "width": 64,
+      "height": 20
+    }
+  ]
+}

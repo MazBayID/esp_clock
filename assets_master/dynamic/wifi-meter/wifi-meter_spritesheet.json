@@ -1,0 +1,47 @@
+{
+  "assetId": "wifi-meter",
+  "layout": "horizontal",
+  "sheet": {
+    "width": 112,
+    "height": 24
+  },
+  "frameCount": 4,
+  "frames": [
+    {
+      "index": 0,
+      "value": 0,
+      "file": "wifi-meter_0bars.png",
+      "x": 0,
+      "y": 0,
+      "width": 28,
+      "height": 24
+    },
+    {
+      "index": 1,
+      "value": 1,
+      "file": "wifi-meter_1bars.png",
+      "x": 28,
+      "y": 0,
+      "width": 28,
+      "height": 24
+    },
+    {
+      "index": 2,
+      "value": 2,
+      "file": "wifi-meter_2bars.png",
+      "x": 56,
+      "y": 0,
+      "width": 28,
+      "height": 24
+    },
+    {
+      "index": 3,
+      "value": 3,
+      "file": "wifi-meter_3bars.png",
+      "x": 84,
+      "y": 0,
+      "width": 28,
+      "height": 24
+    }
+  ]
+}
