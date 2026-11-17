@@ -1,4 +1,4 @@
-# Reserved workflow for the future via_chronos_app firmware.
+# Reserved for the future via_chronos_app firmware.
 # Intentionally disabled until via_wifi is complete and stable.
 name: Build Neo Firmware - via Chronos App (reserved)
 
@@ -7,7 +7,7 @@ on:
 
 jobs:
   placeholder:
-    if: \${{ false }}
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - name: Reserved for future Chronos firmware build

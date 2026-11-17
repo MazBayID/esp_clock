@@ -18,7 +18,7 @@ bool wifiPortalActive = false;
 uint8_t savedWiFiNetworkCount() {
   if (!wifiPreferencesReady) return 0;
 
-  uint8_t count = wifiPreferences.getUChar("count", 0);
+  const uint8_t count = wifiPreferences.getUChar("count", 0);
   return count > MAX_SAVED_WIFI_NETWORKS ? MAX_SAVED_WIFI_NETWORKS : count;
 }
 
@@ -35,13 +35,18 @@ bool connectToWiFi(const String& networkSsid,
     delay(250);
   }
 
-  return WiFi.status() == WL_CONNECTED;
+  if (WiFi.status() == WL_CONNECTED) {
+    return true;
+  }
+
+  WiFi.disconnect(false, false);
+  return false;
 }
 
 bool saveWiFiNetwork(const String& networkSsid,
                      const String& networkPassword) {
   if (!wifiPreferencesReady || networkSsid.length() == 0 ||
-      networkSsid.length() > 32 || networkPassword.length() > 64) {
+      networkSsid.length() > 32 || networkPassword.length() > 63) {
     return false;
   }
 
@@ -49,7 +54,7 @@ bool saveWiFiNetwork(const String& networkSsid,
   String passwords[MAX_SAVED_WIFI_NETWORKS];
   uint8_t count = savedWiFiNetworkCount();
 
-  // Keep existing entries in order, except a duplicate that is being refreshed.
+  // Preserve the existing order, but move a refreshed SSID to newest.
   uint8_t kept = 0;
   for (uint8_t i = 0; i < count; ++i) {
     char ssidKey[8];
@@ -57,8 +62,10 @@ bool saveWiFiNetwork(const String& networkSsid,
     snprintf(ssidKey, sizeof(ssidKey), "ssid%u", i);
     snprintf(passwordKey, sizeof(passwordKey), "pass%u", i);
 
-    String existingSsid = wifiPreferences.getString(ssidKey, "");
-    if (existingSsid == networkSsid) continue;
+    const String existingSsid = wifiPreferences.getString(ssidKey, "");
+    if (existingSsid.length() == 0 || existingSsid == networkSsid) {
+      continue;
+    }
 
     ssids[kept] = existingSsid;
     passwords[kept] = wifiPreferences.getString(passwordKey, "");
@@ -66,7 +73,7 @@ bool saveWiFiNetwork(const String& networkSsid,
   }
   count = kept;
 
-  // FIFO: make room by dropping the oldest saved entry.
+  // FIFO: remove the oldest entry only when a new successful profile is added.
   if (count >= MAX_SAVED_WIFI_NETWORKS) {
     for (uint8_t i = 1; i < count; ++i) {
       ssids[i - 1] = ssids[i];
@@ -79,6 +86,9 @@ bool saveWiFiNetwork(const String& networkSsid,
   passwords[count] = networkPassword;
   ++count;
 
+  bool saved = true;
+
+  // Write the new profile list first; update the count last.
   for (uint8_t i = 0; i < MAX_SAVED_WIFI_NETWORKS; ++i) {
     char ssidKey[8];
     char passwordKey[8];
@@ -86,16 +96,19 @@ bool saveWiFiNetwork(const String& networkSsid,
     snprintf(passwordKey, sizeof(passwordKey), "pass%u", i);
 
     if (i < count) {
-      wifiPreferences.putString(ssidKey, ssids[i]);
-      wifiPreferences.putString(passwordKey, passwords[i]);
+      if (wifiPreferences.putString(ssidKey, ssids[i]) == 0) saved = false;
+      if (wifiPreferences.putString(passwordKey, passwords[i]) == 0) saved = false;
     } else {
       wifiPreferences.remove(ssidKey);
       wifiPreferences.remove(passwordKey);
     }
   }
 
-  wifiPreferences.putUChar("count", count);
-  return true;
+  if (saved && wifiPreferences.putUChar("count", count) == 0) {
+    saved = false;
+  }
+
+  return saved;
 }
 
 void startTimeSynchronization() {
@@ -166,12 +179,12 @@ void sendWiFiPortalPage(const String& message = "") {
     <label for="ssid">Nama Wi-Fi (SSID)</label>
     <input id="ssid" name="ssid" maxlength="32" autocomplete="username" required>
     <label for="password">Password Wi-Fi</label>
-    <input id="password" name="password" type="password" maxlength="64" autocomplete="current-password">
+    <input id="password" name="password" type="password" maxlength="63" autocomplete="current-password">
     <p class="note">Biarkan password kosong jika jaringan tidak menggunakan password.</p>
     <button type="submit">Simpan &amp; Sambungkan</button>
   </form>
   <div id="message" class="message" hidden></div>
-  <div class="footer note">Terhubung ke hotspot perangkat <strong>NEO_CLOCK</strong>. Halaman ini hanya mengatur jaringan Wi-Fi.</div>
+  <div class="footer note">Hotspot konfigurasi: <strong>NEO_CLOCK</strong> · Alamat: 192.168.4.1</div>
 </main>
 <script>
 async function scanNetworks(){
@@ -190,8 +203,9 @@ async function scanNetworks(){
       select.appendChild(option);
     });
   }catch(error){
-    document.getElementById('message').hidden=false;
-    document.getElementById('message').textContent='Pemindaian gagal. Masukkan SSID secara manual.';
+    const message=document.getElementById('message');
+    message.hidden=false;
+    message.textContent='Pemindaian gagal. Masukkan SSID secara manual.';
   }
   button.textContent='Cari jaringan Wi-Fi';
   button.disabled=false;
@@ -207,8 +221,10 @@ fetch('/status').then(response=>response.json()).then(data=>{
 </html>
 )NEOPAGE";
 
-  page.replace("<strong id=\"count\">0</strong>", String("<strong id=\"count\">") +
+  page.replace("<strong id=\"count\">0</strong>",
+               String("<strong id=\"count\">") +
                String(savedWiFiNetworkCount()) + "</strong>");
+
   if (message.length() > 0) {
     page.replace("<div id=\"message\" class=\"message\" hidden></div>",
                  String("<div id=\"message\" class=\"message\">") +
@@ -226,6 +242,7 @@ void handleWiFiScan() {
   if (found > 0) {
     for (int i = 0; i < found; ++i) {
       if (i > 0) json += ',';
+
       const String networkSsid = WiFi.SSID(i);
       const bool secured = WiFi.encryptionType(i) != WIFI_AUTH_OPEN;
 
@@ -246,6 +263,8 @@ void handleWiFiScan() {
 }
 
 void stopWiFiPortal() {
+  if (!wifiPortalActive) return;
+
   wifiDnsServer.stop();
   wifiWebServer.stop();
   WiFi.softAPdisconnect(false);
@@ -257,11 +276,11 @@ void startWiFiPortal() {
   if (wifiPortalActive) return;
 
   Serial.println(F("Starting open Wi-Fi setup hotspot: NEO_CLOCK"));
-  WiFi.disconnect(false, true);
+  WiFi.disconnect(false, false);
   WiFi.mode(WIFI_AP_STA);
   WiFi.setTxPower(WIFI_POWER_8_5dBm);
 
-  if (!WiFi.softAP(WIFI_PORTAL_SSID)) {
+  if (!WiFi.softAP(WIFI_PORTAL_SSID, nullptr, 1, false, 4)) {
     Serial.println(F("Could not start NEO_CLOCK hotspot."));
     return;
   }
@@ -287,36 +306,39 @@ void startWiFiPortal() {
     const String networkPassword = wifiWebServer.arg("password");
 
     if (networkSsid.length() == 0 || networkSsid.length() > 32 ||
-        networkPassword.length() > 64) {
+        networkPassword.length() > 63) {
       sendWiFiPortalPage("SSID atau password tidak valid. Periksa kembali.");
       return;
     }
 
-    sendWiFiPortalPage("Sedang mencoba menyambungkan ke jaringan...");
     Serial.printf("Trying Wi-Fi network: %s\n", networkSsid.c_str());
 
+    // Wait for one connection attempt, then send exactly one HTTP response.
     if (!connectToWiFi(networkSsid, networkPassword, 15000)) {
-      sendWiFiPortalPage("Gagal tersambung. Periksa SSID dan password, lalu coba lagi.");
-      Serial.println(F("New Wi-Fi network connection failed; saved list unchanged."));
+      sendWiFiPortalPage(
+          "Gagal tersambung. Periksa SSID dan password, lalu coba lagi. Profil yang gagal tidak disimpan.");
+      Serial.println(F("Connection failed; saved Wi-Fi list unchanged."));
       return;
     }
 
     if (!saveWiFiNetwork(networkSsid, networkPassword)) {
-      sendWiFiPortalPage("Terhubung, tetapi data tidak dapat disimpan. Periksa penyimpanan perangkat.");
+      sendWiFiPortalPage(
+          "Terhubung, tetapi profil tidak dapat disimpan. Hotspot tetap aktif agar kamu bisa mencoba lagi.");
       Serial.println(F("Connected, but could not save Wi-Fi credentials."));
       return;
     }
 
     WiFi.setAutoReconnect(true);
     startTimeSynchronization();
-    sendWiFiPortalPage("Berhasil tersambung dan jaringan telah disimpan. Hotspot konfigurasi akan ditutup.");
-    delay(1000);
+    sendWiFiPortalPage(
+        "Berhasil tersambung dan jaringan telah disimpan. Hotspot konfigurasi akan ditutup.");
+    delay(1200);
     stopWiFiPortal();
   });
 
   wifiWebServer.onNotFound([]() {
-    wifiWebServer.sendHeader("Location",
-      String("http://") + WiFi.softAPIP().toString() + "/", true);
+    wifiWebServer.sendHeader(
+        "Location", String("http://") + WiFi.softAPIP().toString() + "/", true);
     wifiWebServer.send(302, "text/plain", "");
   });
 
@@ -333,49 +355,84 @@ void setupWiFi() {
   WiFi.mode(WIFI_STA);
   WiFi.setTxPower(WIFI_POWER_8_5dBm);
 
-  wifiPreferencesReady = wifiPreferences.begin(WIFI_PREFERENCES_NAMESPACE, false);
+  wifiPreferencesReady =
+      wifiPreferences.begin(WIFI_PREFERENCES_NAMESPACE, false);
+
   if (!wifiPreferencesReady) {
     Serial.println(F("Could not open Wi-Fi credential storage."));
   }
 
   const uint8_t count = savedWiFiNetworkCount();
-  for (uint8_t i = 0; i < count; ++i) {
+  bool scanSucceeded = false;
+  int visibleNetworkCount = 0;
+
+  if (count > 0) {
+    // Scan once so unavailable SSIDs are skipped instead of waiting 10 seconds
+    // for each missing profile. Hidden networks are included in the scan.
+    visibleNetworkCount = WiFi.scanNetworks(false, true);
+    scanSucceeded = visibleNetworkCount >= 0;
+  }
+
+  // Newer profiles are tried first; storage order remains oldest-to-newest.
+  for (int profile = static_cast<int>(count) - 1; profile >= 0; --profile) {
     char ssidKey[8];
     char passwordKey[8];
-    snprintf(ssidKey, sizeof(ssidKey), "ssid%u", i);
-    snprintf(passwordKey, sizeof(passwordKey), "pass%u", i);
+    snprintf(ssidKey, sizeof(ssidKey), "ssid%u", profile);
+    snprintf(passwordKey, sizeof(passwordKey), "pass%u", profile);
 
-    const String savedSsid = wifiPreferences.getString(ssidKey, "");
-    const String savedPassword = wifiPreferences.getString(passwordKey, "");
+    const String savedSsid = wifiPreferencesReady
+                                 ? wifiPreferences.getString(ssidKey, "")
+                                 : "";
+    const String savedPassword = wifiPreferencesReady
+                                     ? wifiPreferences.getString(passwordKey, "")
+                                     : "";
+
     if (savedSsid.length() == 0) continue;
 
-    Serial.printf("Trying saved Wi-Fi %u/%u: %s\n",
-                  static_cast<unsigned>(i + 1),
-                  static_cast<unsigned>(count),
-                  savedSsid.c_str());
+    bool visible = !scanSucceeded;
+    if (scanSucceeded) {
+      for (int found = 0; found < visibleNetworkCount; ++found) {
+        if (WiFi.SSID(found) == savedSsid) {
+          visible = true;
+          break;
+        }
+      }
+    }
 
+    if (!visible) {
+      Serial.printf("Saved Wi-Fi not found nearby: %s\n", savedSsid.c_str());
+      continue;
+    }
+
+    Serial.printf("Trying saved Wi-Fi profile: %s\n", savedSsid.c_str());
     if (connectToWiFi(savedSsid, savedPassword, WIFI_CONNECT_TIMEOUT_MS)) {
+      WiFi.scanDelete();
       WiFi.setAutoReconnect(true);
       startTimeSynchronization();
       return;
     }
   }
 
-  // Keep support for a local secrets.h as a one-time bootstrap fallback.
+  if (count > 0) {
+    WiFi.scanDelete();
+  }
+
+  // Backward-compatible one-time bootstrap from an existing local secrets.h.
   if (ssid != nullptr && ssid[0] != '\0') {
-    Serial.printf("Trying local fallback Wi-Fi: %s\n", ssid);
-    const String fallbackSsid = ssid;
-    const String fallbackPassword = password == nullptr ? "" : password;
+    Serial.printf("Trying local bootstrap Wi-Fi: %s\n", ssid);
+    const String bootstrapSsid = ssid;
+    const String bootstrapPassword = password == nullptr ? "" : password;
 
-    if (connectToWiFi(fallbackSsid, fallbackPassword, WIFI_CONNECT_TIMEOUT_MS)) {
-      saveWiFiNetwork(fallbackSsid, fallbackPassword);
+    if (connectToWiFi(bootstrapSsid, bootstrapPassword,
+                      WIFI_CONNECT_TIMEOUT_MS)) {
+      saveWiFiNetwork(bootstrapSsid, bootstrapPassword);
       WiFi.setAutoReconnect(true);
       startTimeSynchronization();
       return;
     }
   }
 
-  Serial.println(F("No configured Wi-Fi network connected. Starting setup portal."));
+  Serial.println(F("No saved Wi-Fi network connected. Starting setup portal."));
   startWiFiPortal();
 }
 

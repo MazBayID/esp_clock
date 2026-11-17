@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: neo-firmware-via-wifi-build-\${{ github.ref }}
+  group: neo-firmware-via-wifi-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -30,10 +30,8 @@ jobs:
 
       - name: Install ESP32 platform
         run: |
-          arduino-cli core update-index \\
-            --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
-          arduino-cli core install esp32:esp32@3.3.12 \\
-            --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core update-index --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core install esp32:esp32@3.3.12 --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
 
       - name: Install Arduino libraries
         run: |
@@ -44,11 +42,7 @@ jobs:
 
       - name: Compile via_wifi firmware
         run: |
-          arduino-cli compile \\
-            --fqbn esp32:esp32:esp32c3 \\
-            --warnings all \\
-            --output-dir build/via_wifi \\
-            firmware/via_wifi
+          arduino-cli compile --fqbn esp32:esp32:esp32c3 --warnings all --output-dir build/via_wifi firmware/via_wifi
 
       - name: Package firmware binaries
         run: |
@@ -67,12 +61,12 @@ jobs:
           Select the ESP32-C3 target and the serial port for your board.
           EOF
           cd dist
-          zip -9 "../NeoFirmware-via-wifi-ESP32-C3-\${GITHUB_SHA::7}.zip" ./*.bin FLASH-INSTRUCTIONS.txt
+          zip -9 "../NeoFirmware-via-wifi-ESP32-C3-${GITHUB_SHA::7}.zip" ./*.bin FLASH-INSTRUCTIONS.txt
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: NeoFirmware-via-wifi-ESP32-C3-\${{ github.sha }}
+          name: NeoFirmware-via-wifi-ESP32-C3-${{ github.sha }}
           path: NeoFirmware-via-wifi-ESP32-C3-*.zip
           if-no-files-found: error
           retention-days: 30

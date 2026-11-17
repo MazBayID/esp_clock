@@ -1,4 +1,4 @@
-# Local Wi-Fi credentials
+# Local Wi-Fi bootstrap credentials (optional)
 firmware/via_wifi/src/config/secrets.h
 
 # Arduino / firmware build outputs

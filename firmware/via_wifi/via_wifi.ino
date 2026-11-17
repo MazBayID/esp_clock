@@ -1,7 +1,7 @@
 #include "src/config/config.h"
 
-// Optional local bootstrap credentials from secrets.h.
-// Stored networks are managed separately in ESP32 NVS.
+// Optional one-time bootstrap credentials from a local secrets.h.
+// After a successful connection, they are saved in ESP32 NVS.
 const char* ssid = NEO_WIFI_SSID;
 const char* password = NEO_WIFI_PASSWORD;
 
@@ -45,7 +45,8 @@ void loop() {
   handleWiFiPortal();
 
   struct tm timeinfo = {};
-  const bool isTimeAvail = getLocalTime(&timeinfo);
+  const bool isTimeAvail =
+      WiFi.status() == WL_CONNECTED && getLocalTime(&timeinfo);
 
   if (isTimeAvail) {
     if (lastHour == -1) {

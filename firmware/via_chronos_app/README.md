@@ -13,11 +13,11 @@ the Chronos Android application over Bluetooth Low Energy (BLE).
 
 **Not started — intentionally postponed.**
 
-The current `via_wifi` firmware is the active development and build target.
-Do not copy or merge the Dirgamochi implementation into `via_wifi`.
+The current `via_wifi` firmware remains the only active build target.
+The separate Chronos workflow is reserved but disabled; it contains no compile
+or packaging steps yet. Do not copy the Dirgamochi implementation into
+`via_wifi`.
 
-When `via_wifi` is complete and stable, this folder can receive its own
+After `via_wifi` is complete and stable, this folder can receive its own
 firmware structure, configuration, dependencies, and build workflow after the
 template has been reviewed against the actual board wiring and required features.
-
-This folder is not compiled by the current GitHub Actions workflow.
