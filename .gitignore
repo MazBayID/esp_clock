@@ -1,0 +1,13 @@
+# Local Wi-Fi credentials
+firmware/NeoFirmware/src/config/secrets.h
+
+# Arduino / firmware build outputs
+build/
+firmware/NeoFirmware/build/
+*.bin
+*.elf
+*.map
+
+# Local tooling
+.arduino/
+.pio/
