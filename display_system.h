@@ -6,7 +6,6 @@
 #include "style01.h"
 #include "style02.h"
 #include "style03.h"
-#include "style04.h"
 
 // Mengambil bitmap digit sesuai gaya jam yang sedang aktif.
 const unsigned char* getDigitBitmap(int number) {
@@ -16,7 +15,6 @@ const unsigned char* getDigitBitmap(int number) {
     case 0: return ClockStyle01::epd_bitmap_allArray[number];
     case 1: return ClockStyle02::epd_bitmap_allArray[number];
     case 2: return ClockStyle03::epd_bitmap_allArray[number];
-    case 3: return ClockStyle04::epd_bitmap_allArray[number];
     default: return ClockStyle03::epd_bitmap_allArray[number];
   }
 }
@@ -27,7 +25,6 @@ const unsigned char* getClockColonBitmap() {
     case 0: return ClockStyle01::epd_bitmap_allArray[10];
     case 1: return ClockStyle02::epd_bitmap_allArray[10];
     case 2: return ClockStyle03::epd_bitmap_allArray[10];
-    case 3: return ClockStyle04::epd_bitmap_allArray[10];
     default: return ClockStyle03::epd_bitmap_allArray[10];
   }
 }
