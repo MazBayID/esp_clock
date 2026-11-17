@@ -1,7 +1,8 @@
 #ifndef JAM_QUOTE_SYSTEM_H
 #define JAM_QUOTE_SYSTEM_H
 
-#include "config.h"
+#include "../config/config.h"
+#include "../assets/default/logos/neo_logo.h"
 
 // --- MENGAMBIL QUOTES DARI WEB ---
 void fetchQuote() {
