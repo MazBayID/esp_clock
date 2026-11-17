@@ -1,7 +1,7 @@
 #include "src/config/config.h"
 
-// Wi-Fi credentials are supplied locally through secrets.h.
-// Empty defaults allow the public CI build to compile safely.
+// Optional local bootstrap credentials from secrets.h.
+// Stored networks are managed separately in ESP32 NVS.
 const char* ssid = NEO_WIFI_SSID;
 const char* password = NEO_WIFI_PASSWORD;
 
@@ -42,6 +42,8 @@ void setup() {
 }
 
 void loop() {
+  handleWiFiPortal();
+
   struct tm timeinfo = {};
   const bool isTimeAvail = getLocalTime(&timeinfo);
 
