@@ -1,7 +1,7 @@
 #ifndef JAM_INPUT_SYSTEM_H
 #define JAM_INPUT_SYSTEM_H
 
-#include "config.h"
+#include "../config/config.h"
 
 // Membaca input sentuh dan mengelola perpindahan layar.
 void updateInput() {
