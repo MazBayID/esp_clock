@@ -1,9 +1,9 @@
-# Local Wi-Fi credentials
-firmware/NeoFirmware/src/config/secrets.h
+# Local Wi-Fi bootstrap credentials (optional)
+firmware/via_wifi/src/config/secrets.h
 
 # Arduino / firmware build outputs
 build/
-firmware/NeoFirmware/build/
+firmware/via_wifi/build/
 *.bin
 *.elf
 *.map

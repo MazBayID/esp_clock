@@ -11,8 +11,11 @@
 #include <time.h>
 #include <driver/i2s.h>
 #include <esp_wifi.h>
+#include <Preferences.h>
+#include <WebServer.h>
+#include <DNSServer.h>
 
-// Optional local credentials. secrets.h is intentionally not committed.
+// Optional local bootstrap credentials. secrets.h is intentionally not committed.
 #if defined(__has_include)
   #if __has_include("secrets.h")
     #include "secrets.h"
@@ -67,6 +70,7 @@ void beep(int times);
 void setupI2S();
 void setupDisplay();
 void setupWiFi();
+void handleWiFiPortal();
 void fetchQuote();
 String formatDuaDigit(int angka);
 void drawDigit(int x, int y, int number);

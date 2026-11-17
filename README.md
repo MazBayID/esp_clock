@@ -1,86 +1,63 @@
 # Neo Firmware
 
-Neo Firmware is the modular firmware foundation for the ESP32-C3 SuperMini.
-**Neo Clock** is its first built-in feature. The architecture is intended to grow
-with additional device, UI, networking, and IoT capabilities.
+Neo Firmware is the firmware foundation for the ESP32-C3 SuperMini. It has two separate development tracks:
+
+- **via_wifi** — the active Neo Clock firmware. This is the only firmware being built and developed now.
+- **via_chronos_app** — a future firmware track for the Chronos Android app. Work on it is postponed until `via_wifi` is complete and stable.
 
 ## Repository layout
 
 ```text
-assets_master/                         # Incoming original UI assets + manifest
+assets_master/                         # Incoming original UI assets and manifest
 firmware/
-└── NeoFirmware/
-    ├── NeoFirmware.ino                # Arduino sketch entry point
-    └── src/
-        ├── config/
-        │   ├── config.h               # Board config + shared declarations
-        │   └── secrets.example.h      # Local Wi-Fi setup template
-        ├── systems/
-        │   ├── display_system.h
-        │   ├── clock_system.h
-        │   ├── input_system.h
-        │   ├── wifi_system.h
-        │   ├── audio_system.h
-        │   └── quote_system.h
-        └── assets/
-            └── default/
-                ├── digits/            # Built-in clock digit styles
-                └── logos/             # Built-in Neo logos
+├── via_wifi/                          # Current active firmware
+│   ├── via_wifi.ino
+│   └── src/
+│       ├── config/
+│       ├── systems/
+│       └── assets/default/
+└── via_chronos_app/                   # Future Chronos BLE firmware
+.github/workflows/
+├── build-firmware-via-wifi.yml
+└── build-firmware-via-chronos-app.yml
 ```
 
 ## Hardware target
 
 - ESP32-C3 SuperMini
-- SSD1306 OLED, 128x64, I2C address 0x3C
+- SSD1306 OLED, 128x64, I2C
 - MAX98357A I2S audio amplifier
 - TTP223 touch inputs
 
-Pin assignments are defined in `firmware/NeoFirmware/src/config/config.h`.
+Pin assignments are defined in `firmware/via_wifi/src/config/config.h`.
 
-## Build with GitHub Actions
+## Wi-Fi setup portal
 
-The workflow `.github/workflows/build-firmware.yml` builds the ESP32-C3 firmware
-on pushes to `main`, pull requests targeting `main`, and manual dispatches.
+The firmware stores up to **5 Wi-Fi profiles** in ESP32 NVS Preferences.
 
-After a successful run, open the workflow run's **Artifacts** section and download
-the `NeoFirmware-ESP32-C3-...` ZIP. It contains the generated ESP32 binary files
-and flashing-offset instructions. The build does not require Wi-Fi credentials.
+1. At startup, Neo Clock scans for saved networks and tries the networks it can currently see, starting with the most recently added profile.
+2. If no profile is saved, or no saved SSID is found or can be connected to, Neo Clock creates an open hotspot named `NEO_CLOCK`.
+3. Connect a phone to `NEO_CLOCK`. The captive portal should open automatically. If it does not, open `http://192.168.4.1` in a browser.
+4. Select a nearby network from the scan list or enter its SSID manually, then enter the password. A profile is saved only after the connection succeeds.
+5. When five profiles are already stored, adding a sixth distinct network removes the oldest profile (FIFO). Updating an existing SSID refreshes its password and moves it to the newest position. Failed connection attempts do not change the saved list.
 
-## Build locally with Arduino CLI
+The setup hotspot is open and intended for local configuration only. Anyone nearby can join while it is active, so configure Neo Clock in a trusted environment. Wi-Fi credentials are stored in ESP32 NVS; flash encryption is not enabled by this firmware.
 
-Install Arduino CLI, then run:
+## GitHub Actions builds
 
-```sh
-arduino-cli core update-index \
-  --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+There are two separate workflow files:
 
-arduino-cli core install esp32:esp32@3.3.12 \
-  --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+- `.github/workflows/build-firmware-via-wifi.yml` builds only `firmware/via_wifi` for ESP32-C3 on pushes, pull requests targeting `main`, and manual dispatch.
+- `.github/workflows/build-firmware-via-chronos-app.yml` is a disabled placeholder. It does not compile or package anything yet.
 
-arduino-cli lib install "Adafruit GFX Library"
-arduino-cli lib install "Adafruit SSD1306"
-arduino-cli lib install "ArduinoJson"
+After a successful Wi-Fi workflow run, download the `NeoFirmware-via-wifi-ESP32-C3-...` ZIP from the run's **Artifacts** section.
 
-arduino-cli compile \
-  --fqbn esp32:esp32:esp32c3 \
-  firmware/NeoFirmware
-```
-
-## Local Wi-Fi credentials
-
-Copy `firmware/NeoFirmware/src/config/secrets.example.h` to
-`firmware/NeoFirmware/src/config/secrets.h` and enter your Wi-Fi SSID/password.
-The real `secrets.h` is ignored by Git. If it is absent, the firmware still builds
-and skips Wi-Fi initialization at runtime.
-
-Do not commit real credentials or paste them into source files.
+Chronos reference template: [Dirgamochi C3](https://github.com/MazBayID/Dirgamochi-C3_v0.7.0--BiG-Update)
 
 ## Asset workflow
 
-The three current clock digit styles are preserved as built-in firmware defaults
-under `firmware/NeoFirmware/src/assets/default/digits/`.
+The current clock digit styles remain built-in defaults under
+`firmware/via_wifi/src/assets/default/digits/`.
 
-Upload new original UI files and their manifest to `assets_master/`. They will
-be inspected first; only then will each asset be converted or moved to its final
-runtime folder under `firmware/NeoFirmware/src/assets/`. The intake folder is
-not automatically compiled into firmware.
+Upload original UI assets and their manifest to `assets_master/`. They will be
+reviewed first, then placed or converted into the appropriate runtime folders.
