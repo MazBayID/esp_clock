@@ -1,5 +1,5 @@
-#ifndef JAM_CONFIG_H
-#define JAM_CONFIG_H
+#ifndef NEO_FIRMWARE_CONFIG_H
+#define NEO_FIRMWARE_CONFIG_H
 
 #include <Arduino.h>
 #include <WiFi.h>
@@ -12,7 +12,22 @@
 #include <driver/i2s.h>
 #include <esp_wifi.h>
 
-// OLED SSD1306
+// Optional local credentials. secrets.h is intentionally not committed.
+#if defined(__has_include)
+  #if __has_include("secrets.h")
+    #include "secrets.h"
+  #endif
+#endif
+
+#ifndef NEO_WIFI_SSID
+  #define NEO_WIFI_SSID ""
+#endif
+
+#ifndef NEO_WIFI_PASSWORD
+  #define NEO_WIFI_PASSWORD ""
+#endif
+
+// Board: ESP32-C3 SuperMini
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
@@ -24,37 +39,30 @@
 #define I2S_LRC  2
 #define I2S_DIN  5
 
-// TTP223 TOUCH SENSORS
+// TTP223 touch sensors
 #define PIN_PREV 4
 #define PIN_NEXT 6
 #define PIN_MODE 7
 
-// Konfigurasi waktu
 extern const long gmtOffset_sec;
 extern const int daylightOffset_sec;
 
-// Objek dan konfigurasi perangkat
 extern Adafruit_SSD1306 display;
 extern const char* ssid;
 extern const char* password;
 
-// State aplikasi
 extern int currentScreen;
 extern int clockFace;
 extern unsigned long signalTimer;
 extern unsigned long quoteTimer;
 extern String currentQuote;
 extern int lastHour;
+extern uint8_t clockStyle;
 
-// State input
 extern bool lastTalkState;
 extern bool lastNextState;
 extern bool lastModeState;
 
-// Bitmap digit
-extern uint8_t clockStyle;
-
-// Deklarasi fungsi lintas-modul
 void beep(int times);
 void setupI2S();
 void setupDisplay();

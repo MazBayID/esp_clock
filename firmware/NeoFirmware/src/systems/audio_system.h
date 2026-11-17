@@ -1,7 +1,7 @@
 #ifndef JAM_AUDIO_SYSTEM_H
 #define JAM_AUDIO_SYSTEM_H
 
-#include "config.h"
+#include "../config/config.h"
 
 // --- FUNGSI AUDIO BEEP (8-Bit Style) ---
 void beep(int times) {
