@@ -96,8 +96,15 @@ bool saveWiFiNetwork(const String& networkSsid,
     snprintf(passwordKey, sizeof(passwordKey), "pass%u", i);
 
     if (i < count) {
-      if (wifiPreferences.putString(ssidKey, ssids[i]) == 0) saved = false;
-      if (wifiPreferences.putString(passwordKey, passwords[i]) == 0) saved = false;
+      wifiPreferences.putString(ssidKey, ssids[i]);
+      wifiPreferences.putString(passwordKey, passwords[i]);
+
+      // putString() returns strlen(value), so a valid empty password returns 0.
+      // isKey() distinguishes that valid open-network password from a failed write.
+      if (!wifiPreferences.isKey(ssidKey) ||
+          !wifiPreferences.isKey(passwordKey)) {
+        saved = false;
+      }
     } else {
       wifiPreferences.remove(ssidKey);
       wifiPreferences.remove(passwordKey);

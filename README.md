@@ -41,7 +41,7 @@ The firmware stores up to **5 Wi-Fi profiles** in ESP32 NVS Preferences.
 4. Select a nearby network from the scan list or enter its SSID manually, then enter the password. A profile is saved only after the connection succeeds.
 5. When five profiles are already stored, adding a sixth distinct network removes the oldest profile (FIFO). Updating an existing SSID refreshes its password and moves it to the newest position. Failed connection attempts do not change the saved list.
 
-The setup hotspot is open and intended for local configuration only. Anyone nearby can join while it is active, so configure Neo Clock in a trusted environment. Wi-Fi credentials are stored in ESP32 NVS; flash encryption is not enabled by this firmware.
+The setup hotspot is open and intended for local configuration only. Open Wi-Fi networks (empty password) are supported. Anyone nearby can join while it is active, so configure Neo Clock in a trusted environment. Wi-Fi credentials are stored in ESP32 NVS; flash encryption is not enabled by this firmware.
 
 ## GitHub Actions builds
 
