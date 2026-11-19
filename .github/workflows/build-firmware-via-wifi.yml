@@ -8,6 +8,17 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      gpio_config:
+        description: 'JSON object with supported GPIO signal-to-pin assignments'
+        required: false
+        type: string
+        default: '{}'
+      build_id:
+        description: 'Firmware Builder request UUID (leave empty for manual builds)'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -24,6 +35,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Validate and apply GPIO configuration
+        env:
+          GPIO_CONFIG_JSON: ${{ inputs.gpio_config || '{}' }}
+        run: |
+          python tools/configure_gpio.py --variant via_wifi
+          python -m unittest discover -s tests -v
 
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v2
@@ -51,12 +69,15 @@ jobs:
           arduino-cli compile --fqbn esp32:esp32:esp32c3 --warnings all --output-dir build/neo-clock firmware/via_wifi
 
       - name: Package standardized firmware downloads
+        env:
+          BUILD_ID: ${{ inputs.build_id || '' }}
         run: |
           python tools/package_firmware.py \
             --variant via_wifi \
             --build-dir build/neo-clock \
             --output-dir dist/via_wifi \
-            --git-sha "$GITHUB_SHA"
+            --git-sha "$GITHUB_SHA" \\
+            --build-id "$BUILD_ID"
 
       - name: Upload firmware package
         uses: actions/upload-artifact@v4
