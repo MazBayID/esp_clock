@@ -127,17 +127,9 @@ void renderDisplay(const struct tm& timeinfo, bool isTimeAvail) {
         display.setCursor(0, 16);
         display.print("SSID: NEO_CLOCK");
 
-        static unsigned long lastScrollUpdate = 0;
-        static uint16_t scrollOffset = 0;
         const String instruction =
-            String("THEN OPEN HTTP://") + WiFi.softAPIP().toString() +
-            " ON YOUR BROWSER";
-        const uint16_t textWidth = instruction.length() * 6;
-        if (millis() - lastScrollUpdate >= 35) {
-          lastScrollUpdate = millis();
-          scrollOffset = (scrollOffset + 1) % (textWidth + SCREEN_WIDTH);
-        }
-        display.setCursor(SCREEN_WIDTH - scrollOffset, 42);
+            String("THEN OPEN HTTP://") + WiFi.softAPIP().toString();
+        display.setCursor(0, 42);
         display.print(instruction);
       } else {
         display.setCursor(10, 24);
