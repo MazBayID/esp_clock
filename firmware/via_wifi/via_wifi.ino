@@ -13,6 +13,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 int currentScreen = 0;
 int clockFace = 0;
 uint8_t clockStyle = 2; // Default asset: Style 03.
+uint8_t menuSelection = 0;
 unsigned long signalTimer = 0;
 int lastHour = -1;
 
@@ -33,6 +34,7 @@ void setup() {
   pinMode(PIN_NEXT, INPUT);
   pinMode(PIN_MODE, INPUT);
 
+  setupMenuSettings();
   setupI2S();
   setupDisplay();
   setupWiFi();
