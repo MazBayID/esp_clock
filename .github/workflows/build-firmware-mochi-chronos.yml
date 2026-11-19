@@ -6,6 +6,8 @@ on:
     paths:
       - "firmware/mochi_chronos/**"
       - "tools/package_firmware.py"
+      - "tools/configure_gpio.py"
+      - "tests/test_configure_gpio.py"
       - ".github/workflows/build-firmware-mochi-chronos.yml"
   pull_request:
     branches: [main]
