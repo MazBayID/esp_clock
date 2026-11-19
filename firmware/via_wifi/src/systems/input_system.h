@@ -74,7 +74,7 @@ void updateInput() {
           currentScreen = 3;
         } else if (currentScreen == 2 || currentScreen == 4) {
           currentScreen = 3;
-
+        }
       }
       modePressActive = false;
     }
