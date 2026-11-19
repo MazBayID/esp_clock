@@ -2,6 +2,7 @@
 #define NEO_FIRMWARE_WIFI_SYSTEM_H
 
 #include "../config/config.h"
+#include <esp_sntp.h>
 
 namespace {
 constexpr uint8_t MAX_SAVED_WIFI_NETWORKS = 5;
