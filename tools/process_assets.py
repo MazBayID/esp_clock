@@ -22,6 +22,14 @@ for percent in range(0, 101, 5):
     add(f"progress_bar_{percent}", f"dynamic/progress-bar/progress-bar_{percent}pct.png", (48, 8))
 add("heart_dynamic", "dynamic/heart-dynamic/heart-dynamic_base.png", (16, 16))
 
+for digit in range(10):
+    add(f"digit_a_{digit}", f"icon/a/icon_a_{digit}.png", (25, 48))
+    add(f"digit_b_{digit}", f"icon/b/icon_b_{digit}.png", (25, 25))
+    add(f"digit_c_{digit}", f"icon/c/icon_b_{digit}.png", (25, 48))
+add("digit_a_dots", "icon/a/icon_a_dots.png", (25, 48))
+add("digit_b_dots", "icon/b/icon_b_dots.png", (25, 25))
+add("digit_c_dots", "icon/c/icon_c_dots.png", (25, 48))
+
 for name, filename, size in [
     ("bluetooth", "bluetooth_24x28.png", (16, 18)),
     ("wifi_static", "wifi-static_28x24.png", (16, 14)),
