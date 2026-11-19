@@ -5,16 +5,37 @@ on:
     branches: [main]
     paths:
       - "firmware/mochi_chronos/**"
+      - "tools/package_firmware.py"
+      - "tools/configure_gpio.py"
+      - "tests/test_configure_gpio.py"
       - ".github/workflows/build-firmware-mochi-chronos.yml"
   pull_request:
     branches: [main]
     paths:
       - "firmware/mochi_chronos/**"
+      - "tools/package_firmware.py"
+      - "tools/configure_gpio.py"
+      - "tests/test_configure_gpio.py"
       - ".github/workflows/build-firmware-mochi-chronos.yml"
   workflow_dispatch:
+    inputs:
+      gpio_config:
+        description: 'JSON object with supported GPIO signal-to-pin assignments'
+        required: false
+        type: string
+        default: '{}'
+      build_id:
+        description: 'Firmware Builder request UUID (leave empty for manual builds)'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
+
+concurrency:
+  group: neo-clock-mochi-build-${{ github.workflow }}-${{ github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -22,6 +43,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Validate and apply GPIO configuration
+        env:
+          GPIO_CONFIG_JSON: ${{ inputs.gpio_config || '{}' }}
+        run: |
+          python tools/configure_gpio.py --variant mochi_chronos
+          python -m unittest discover -s tests -v
+
+      - name: Notify Firmware Builder that build started
+        if: ${{ inputs.build_id != '' }}
+        continue-on-error: true
+        env:
+          CALLBACK_URL: https://ymjhfaplponxbjhpvhuq.supabase.co/functions/v1/firmware-build-callback
+          CALLBACK_SECRET: ${{ secrets.FIRMWARE_BUILDER_CALLBACK_SECRET }}
+          BUILD_ID: ${{ inputs.build_id }}
+        run: |
+          if [ -z "$CALLBACK_SECRET" ]; then
+            echo "::warning::Firmware Builder callback secret is not configured"
+            exit 0
+          fi
+          payload="$(python -c 'import json,os; print(json.dumps({"event":"started","build_id":os.environ["BUILD_ID"],"run_id":int(os.environ["GITHUB_RUN_ID"]),"run_attempt":int(os.environ["GITHUB_RUN_ATTEMPT"]),"source_commit_sha":os.environ["GITHUB_SHA"]}))')"
+          curl --fail-with-body --silent --show-error -X POST "$CALLBACK_URL" \
+            -H "Authorization: Bearer $CALLBACK_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -56,18 +102,50 @@ jobs:
             0x8000 .pio/build/esp32-c3-supermini/partitions.bin \
             0x10000 .pio/build/esp32-c3-supermini/firmware.bin
 
-      - name: Upload standard firmware
-        uses: actions/upload-artifact@v4
-        with:
-          name: mochi-chronos-firmware
-          if-no-files-found: error
-          path: |
-            firmware/mochi_chronos/.pio/build/esp32-c3-supermini/firmware.bin
-            firmware/mochi_chronos/.pio/build/esp32-c3-supermini/merged-firmware.bin
+      - name: Package standardized firmware downloads
+        env:
+          BUILD_ID: ${{ inputs.build_id || '' }}
+        run: |
+          python tools/package_firmware.py \
+            --variant mochi_chronos \
+            --build-dir firmware/mochi_chronos/.pio/build/esp32-c3-supermini \
+            --output-dir dist/mochi_chronos \
+            --git-sha "$GITHUB_SHA" \
+            --build-id "$BUILD_ID"
 
-      - name: Upload audio-enabled firmware
+      - name: Upload firmware package
+        id: upload_package
         uses: actions/upload-artifact@v4
         with:
-          name: mochi-chronos-audio-firmware
+          name: neo-clock-mochi-chronos-${{ github.sha }}
+          path: dist/mochi_chronos/*
           if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload audio-enabled experimental build
+        uses: actions/upload-artifact@v4
+        with:
+          name: neo-clock-mochi-chronos-audio-experimental-${{ github.sha }}
           path: firmware/mochi_chronos/.pio/build/esp32-c3-supermini-audio/firmware.bin
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Report Firmware Builder completion
+        if: ${{ always() && inputs.build_id != '' }}
+        continue-on-error: true
+        env:
+          CALLBACK_URL: https://ymjhfaplponxbjhpvhuq.supabase.co/functions/v1/firmware-build-callback
+          CALLBACK_SECRET: ${{ secrets.FIRMWARE_BUILDER_CALLBACK_SECRET }}
+          BUILD_ID: ${{ inputs.build_id }}
+          JOB_STATUS: ${{ job.status }}
+          ARTIFACT_ID: ${{ steps.upload_package.outputs.artifact-id }}
+        run: |
+          if [ -z "$CALLBACK_SECRET" ]; then
+            echo "::warning::Firmware Builder callback secret is not configured"
+            exit 0
+          fi
+          payload="$(python -c 'import json,os; print(json.dumps({"event":"completed","build_id":os.environ["BUILD_ID"],"run_id":int(os.environ["GITHUB_RUN_ID"]),"run_attempt":int(os.environ["GITHUB_RUN_ATTEMPT"]),"artifact_id":int(os.environ["ARTIFACT_ID"]) if os.environ.get("ARTIFACT_ID") else None,"job_status":os.environ["JOB_STATUS"],"source_commit_sha":os.environ["GITHUB_SHA"]}))')"
+          curl --fail-with-body --silent --show-error -X POST "$CALLBACK_URL" \
+            -H "Authorization: Bearer $CALLBACK_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
