@@ -2,6 +2,15 @@
 
 Separate BLE firmware for the existing NEO CLOCK hardware. This build does not modify or replace `via_wifi`.
 
+## Project references
+
+- Chronos Android app: [Google Play Store](https://play.google.com/store/apps/details?id=com.fbiego.chronos)
+- Chronos website: [chronos.ke](https://chronos.ke/)
+- Official ESP32 library: [fbiego/chronos-esp32](https://github.com/fbiego/chronos-esp32)
+- Additional hardware/reference project: [Dirgamochi-C3 v0.7.0](https://github.com/MazBayID/Dirgamochi-C3_v0.7.0--BiG-Update)
+
+The Chronos app and the official ChronosESP32 library are the BLE integration references. Dirgamochi-C3 is an additional reference for reviewing compatible hardware/firmware ideas; its implementation must not be copied blindly or allowed to change the fixed NEO CLOCK pinout.
+
 ## Fixed hardware / pinout
 
 - ESP32-C3 SuperMini
@@ -15,7 +24,7 @@ The microphone is not enabled in the first milestone. Its clock pins are shared 
 
 ## BLE implementation
 
-Uses fbiego's official [ChronosESP32](https://github.com/fbiego/chronos-esp32) library (Arduino dependency). The screen identifier is `CS_0x0_000_CFF` (no display profile), because the physical OLED is 128x64 and must not be identified as a 240x240 or 466x466 watch.
+Uses fbiego's official [ChronosESP32](https://github.com/fbiego/chronos-esp32) Arduino library. The screen identifier is `CS_0x0_000_CFF` (no display profile), because the physical OLED is 128x64 and must not be identified as a 240x240 or 466x466 watch.
 
 Pair through the Chronos app:
 
@@ -27,7 +36,7 @@ Pair through the Chronos app:
 ## Display and assets
 
 - Reuses the six original NEO CLOCK digit styles and both logo bitmaps from `via_wifi`.
-- Uses `assets_master/` as the source for additional UI assets.
+- Uses `assets_master/` as the source for additional UI assets when required.
 - The Chronos workflow runs `tools/process_assets.py` with a separate output path, so generated assets are placed under `via_chronos` and do not overwrite the Wi-Fi firmware assets.
 - `assets_master/` source PNGs remain unchanged.
 
@@ -40,6 +49,7 @@ Pair through the Chronos app:
 ## Milestone status
 
 Implemented in firmware:
+
 - SSD1306 initialization and NEO startup logo.
 - Chronos BLE advertising and connection callback.
 - Chronos time synchronization callback.
@@ -47,6 +57,7 @@ Implemented in firmware:
 - Basic touch controls.
 
 Still requires physical-device validation:
+
 - Pairing with Chronos app.
 - Time synchronization and display behavior.
 - Touch sensor polarity and usability.
