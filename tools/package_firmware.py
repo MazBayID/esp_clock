@@ -4,7 +4,6 @@
 This script only packages already-built firmware. It does not compile firmware
 or accept arbitrary user-supplied code/configuration.
 """
-
 from __future__ import annotations
 
 import argparse
@@ -81,9 +80,6 @@ def write_instructions(path: Path, variant: str, has_boot_app0: bool) -> None:
         + "0x0000 bootloader.bin 0x8000 partitions.bin "
         + ("0xE000 boot_app0.bin " if has_boot_app0 else "")
         + "0x10000 firmware.bin",
-        "",
-        "App-only update (existing matching partition layout): flash firmware.bin at 0x10000",
-        "without erasing flash or rewriting bootloader/partition data.",
     ])
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
