@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate compact monochrome firmware bitmaps from immutable assets_master PNGs."""
+"""Resize original UI PNGs and generate compact monochrome firmware bitmaps."""
 from pathlib import Path
 from PIL import Image
 
@@ -7,15 +7,34 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "assets_master"
 OUTPUT = ROOT / "firmware/via_wifi/src/assets/generated/ui_assets.h"
 
-ASSETS = {
-    "wifi_0": ("dynamic/wifi-meter/wifi-meter_0bars.png", (18, 16)),
-    "wifi_1": ("dynamic/wifi-meter/wifi-meter_1bars.png", (18, 16)),
-    "wifi_2": ("dynamic/wifi-meter/wifi-meter_2bars.png", (18, 16)),
-    "wifi_3": ("dynamic/wifi-meter/wifi-meter_3bars.png", (18, 16)),
-}
+ASSETS = {}
+
+def add(name, relative_path, size):
+    ASSETS[name] = (relative_path, size)
+
+for level in range(4):
+    add(f"wifi_{level}", f"dynamic/wifi-meter/wifi-meter_{level}bars.png", (18, 16))
+    add(f"signal_{level}", f"dynamic/signal/signal_{level}bars.png", (18, 16))
+for percent in range(0, 101, 10):
+    add(f"battery_{percent}", f"dynamic/battery/battery_{percent}pct.png", (24, 14))
+for percent in range(0, 101, 5):
+    add(f"progress_arc_{percent}", f"dynamic/progress-arc/progress-arc_{percent}pct.png", (32, 32))
+    add(f"progress_bar_{percent}", f"dynamic/progress-bar/progress-bar_{percent}pct.png", (48, 8))
+add("heart_dynamic", "dynamic/heart-dynamic/heart-dynamic_base.png", (16, 16))
+
+for name, filename, size in [
+    ("bluetooth", "bluetooth_24x28.png", (16, 18)),
+    ("wifi_static", "wifi-static_28x24.png", (16, 14)),
+    ("weather_sun", "weather-sun_28x28.png", (16, 16)),
+    ("weather_moon", "weather-moon_28x28.png", (16, 16)),
+    ("alarm", "alarm_28x28.png", (16, 16)),
+    ("notification", "notification_28x28.png", (16, 16)),
+    ("heart_static", "heart-static_28x28.png", (16, 16)),
+    ("ecg_divider", "ecg-divider_64x20.png", (48, 12)),
+]:
+    add(name, f"static/png/{filename}", size)
 
 def to_xbm(image: Image.Image) -> bytes:
-    image = image.convert("1")
     width, height = image.size
     data = bytearray()
     for y in range(height):
@@ -54,7 +73,7 @@ def main() -> None:
     lines.extend(["}", "#endif", ""])
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text("\n".join(lines), encoding="utf-8")
-    print(f"Generated {OUTPUT.relative_to(ROOT)} ({len(ASSETS)} assets)")
+    print(f"Generated {OUTPUT.relative_to(ROOT)} ({len(ASSETS)} bitmaps)")
 
 if __name__ == "__main__":
     main()
