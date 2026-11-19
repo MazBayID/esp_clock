@@ -11,3 +11,7 @@ firmware/via_wifi/build/
 # Local tooling
 .arduino/
 .pio/
+
+# Mochi Chronos generated animation/audio sources (regenerated during builds)
+firmware/mochi_chronos/include/generated/
+firmware/mochi_chronos/src/generated/
