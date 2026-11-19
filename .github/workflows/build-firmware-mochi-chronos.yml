@@ -5,16 +5,22 @@ on:
     branches: [main]
     paths:
       - "firmware/mochi_chronos/**"
+      - "tools/package_firmware.py"
       - ".github/workflows/build-firmware-mochi-chronos.yml"
   pull_request:
     branches: [main]
     paths:
       - "firmware/mochi_chronos/**"
+      - "tools/package_firmware.py"
       - ".github/workflows/build-firmware-mochi-chronos.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: neo-clock-mochi-build-${{ github.workflow }}-${{ github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -56,18 +62,26 @@ jobs:
             0x8000 .pio/build/esp32-c3-supermini/partitions.bin \
             0x10000 .pio/build/esp32-c3-supermini/firmware.bin
 
-      - name: Upload standard firmware
-        uses: actions/upload-artifact@v4
-        with:
-          name: mochi-chronos-firmware
-          if-no-files-found: error
-          path: |
-            firmware/mochi_chronos/.pio/build/esp32-c3-supermini/firmware.bin
-            firmware/mochi_chronos/.pio/build/esp32-c3-supermini/merged-firmware.bin
+      - name: Package standardized firmware downloads
+        run: |
+          python tools/package_firmware.py \
+            --variant mochi_chronos \
+            --build-dir firmware/mochi_chronos/.pio/build/esp32-c3-supermini \
+            --output-dir dist/mochi_chronos \
+            --git-sha "$GITHUB_SHA"
 
-      - name: Upload audio-enabled firmware
+      - name: Upload firmware package
         uses: actions/upload-artifact@v4
         with:
-          name: mochi-chronos-audio-firmware
+          name: neo-clock-mochi-chronos-${{ github.sha }}
+          path: dist/mochi_chronos/*
           if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload audio-enabled experimental build
+        uses: actions/upload-artifact@v4
+        with:
+          name: neo-clock-mochi-chronos-audio-experimental-${{ github.sha }}
           path: firmware/mochi_chronos/.pio/build/esp32-c3-supermini-audio/firmware.bin
+          if-no-files-found: error
+          retention-days: 30
