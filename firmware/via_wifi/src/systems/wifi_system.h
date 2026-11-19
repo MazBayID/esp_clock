@@ -280,128 +280,66 @@ String jsonEscape(const String& value) {
   return escaped;
 }
 
-void sendWiFiPortalPage(const String& message = "") {
-  String page = R"NEOPAGE(
+void sendWiFiPortalPage() {
+  const char page[] = R"NEOPAGE(
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#080d18">
-  <title>NEO CLOCK · Wi-Fi Setup</title>
+  <title>NEO CLOCK</title>
   <style>
-    :root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#080d18;color:#e8f0ff}
-    *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:22px}
-    main{width:min(100%,440px);background:#111b2b;border:1px solid #263750;border-radius:22px;padding:25px;box-shadow:0 18px 55px #0008}
-    .mark{color:#55d6ff;font-size:12px;font-weight:800;letter-spacing:.22em}
-    h1{margin:8px 0 4px;font-size:29px}
-    p{color:#9eb0c9;line-height:1.5}
-    label{display:block;margin:17px 0 7px;font-size:13px;color:#c6d5e9}
-    input,select{width:100%;padding:13px;border:1px solid #344762;border-radius:11px;background:#091321;color:#fff;font-size:15px}
-    button{width:100%;border:0;border-radius:11px;padding:13px;margin-top:13px;background:#42c8ed;color:#06111b;font-weight:800;font-size:15px}
-    button.secondary{background:#263b55;color:#e8f0ff}
-    .note{font-size:12px;color:#8da2bd}
-    .message{padding:11px;border-radius:10px;background:#1b3043;color:#b9eaff;margin-top:15px}
-    .footer{margin-top:18px;border-top:1px solid #263750;padding-top:14px}
+    body{font-family:Arial,sans-serif;max-width:360px;margin:48px auto;padding:0 18px;color:#111}
+    h1{font-size:26px}
+    label{display:block;margin:18px 0 6px}
+    input,button{box-sizing:border-box;width:100%;padding:12px;font-size:16px}
+    button{margin-top:20px;cursor:pointer}
+    #popup{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center}
+    #popup div{background:#fff;padding:24px 32px;border-radius:8px}
   </style>
 </head>
 <body>
-<main>
-  <div class="mark">NEO FIRMWARE</div>
   <h1>NEO CLOCK</h1>
-  <p>Connect your device to a Wi-Fi network to enable internet access and time synchronization.</p>
-  <p class="note">Saved networks: <strong id="count">0</strong> / 5. When the list is full, the oldest network will be replaced.</p>
-  <button class="secondary" type="button" onclick="scanNetworks()">Scan for Wi-Fi networks</button>
-  <label for="networks">Available networks</label>
-  <select id="networks" onchange="selectNetwork()">
-    <option value="">Select a network (optional)</option>
-  </select>
-  <form method="POST" action="/save">
+  <form id="wifi-form">
     <label for="ssid">Wi-Fi Name (SSID)</label>
     <input id="ssid" name="ssid" maxlength="32" autocomplete="username" required>
-    <label for="password">Wi-Fi Password</label>
+    <label for="password">Password</label>
     <input id="password" name="password" type="password" maxlength="63" autocomplete="current-password">
-    <p class="note">Leave the password empty if the network is open.</p>
-    <button type="submit">Save &amp; Connect</button>
+    <button id="connect" type="submit">Connect</button>
   </form>
-  <div id="message" class="message" hidden></div>
-  <div class="footer note">Setup hotspot: <strong>NEO_CLOCK</strong> · Address: 192.168.4.1</div>
-</main>
-<script>
-async function scanNetworks(){
-  const button=document.querySelector('button.secondary');
-  const select=document.getElementById('networks');
-  button.textContent='Scanning...';
-  button.disabled=true;
-  try{
-    const response=await fetch('/scan');
-    const data=await response.json();
-    select.innerHTML='<option value="">Select a network (optional)</option>';
-    data.networks.forEach(network=>{
-      const option=document.createElement('option');
-      option.value=network.ssid;
-      option.textContent=network.ssid+' ('+network.rssi+' dBm)'+(network.secure?' · secured':' · open');
-      select.appendChild(option);
+  <div id="popup" role="status" aria-live="polite"><div id="popup-text">Connecting...</div></div>
+  <script>
+    const form=document.getElementById('wifi-form');
+    const popup=document.getElementById('popup');
+    const popupText=document.getElementById('popup-text');
+    const button=document.getElementById('connect');
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();
+      popupText.textContent='Connecting...';
+      popup.style.display='flex';
+      button.disabled=true;
+      try{
+        const response=await fetch('/connect',{method:'POST',body:new FormData(form)});
+        const result=await response.json();
+        popupText.textContent=result.success?'Done':(result.message||'Connection failed. Please try again.');
+        if(result.success){
+          form.reset();
+        }else{
+          button.disabled=false;
+          setTimeout(()=>{popup.style.display='none';},1800);
+        }
+      }catch(error){
+        popupText.textContent='Connection failed. Please try again.';
+        button.disabled=false;
+        setTimeout(()=>{popup.style.display='none';},1800);
+      }
     });
-  }catch(error){
-    const message=document.getElementById('message');
-    message.hidden=false;
-    message.textContent='Network scan failed. Enter the SSID manually.';
-  }
-  button.textContent='Scan for Wi-Fi networks';
-  button.disabled=false;
-}
-function selectNetwork(){
-  document.getElementById('ssid').value=document.getElementById('networks').value;
-}
-fetch('/status').then(response=>response.json()).then(data=>{
-  document.getElementById('count').textContent=data.saved;
-}).catch(()=>{});
-</script>
+  </script>
 </body>
 </html>
 )NEOPAGE";
-
-  page.replace("<strong id=\"count\">0</strong>",
-               String("<strong id=\"count\">") +
-               String(savedWiFiNetworkCount()) + "</strong>");
-
-  if (message.length() > 0) {
-    page.replace("<div id=\"message\" class=\"message\" hidden></div>",
-                 String("<div id=\"message\" class=\"message\">") +
-                 message + "</div>");
-  }
-
   wifiWebServer.sendHeader("Cache-Control", "no-store");
   wifiWebServer.send(200, "text/html; charset=utf-8", page);
-}
-
-void handleWiFiScan() {
-  const int found = WiFi.scanNetworks(false, true);
-  String json = "{\"networks\":[";
-
-  if (found > 0) {
-    for (int i = 0; i < found; ++i) {
-      if (i > 0) json += ',';
-
-      const String networkSsid = WiFi.SSID(i);
-      const bool secured = WiFi.encryptionType(i) != WIFI_AUTH_OPEN;
-
-      json += "{\"ssid\":\"";
-      json += jsonEscape(networkSsid);
-      json += "\",\"rssi\":";
-      json += String(WiFi.RSSI(i));
-      json += ",\"secure\":";
-      json += secured ? "true" : "false";
-      json += '}';
-    }
-  }
-
-  json += "]}";
-  WiFi.scanDelete();
-  wifiWebServer.sendHeader("Cache-Control", "no-store");
-  wifiWebServer.send(200, "application/json", json);
 }
 
 void stopWiFiPortal() {
@@ -433,47 +371,35 @@ void startWiFiPortal() {
     sendWiFiPortalPage();
   });
 
-  wifiWebServer.on("/status", HTTP_GET, []() {
-    const String json = String("{\"saved\":") +
-                        String(savedWiFiNetworkCount()) + "}";
-    wifiWebServer.send(200, "application/json", json);
-  });
-
-  wifiWebServer.on("/scan", HTTP_GET, []() {
-    handleWiFiScan();
-  });
-
-  wifiWebServer.on("/save", HTTP_POST, []() {
+  wifiWebServer.on("/connect", HTTP_POST, []() {
     const String networkSsid = wifiWebServer.arg("ssid");
     const String networkPassword = wifiWebServer.arg("password");
 
     if (networkSsid.length() == 0 || networkSsid.length() > 32 ||
         networkPassword.length() > 63) {
-      sendWiFiPortalPage("Invalid SSID or password. Please check your entries.");
+      wifiWebServer.send(400, "application/json",
+                        "{\"success\":false,\"message\":\"Invalid Wi-Fi details.\"}");
       return;
     }
 
     Serial.printf("Trying Wi-Fi network: %s\n", networkSsid.c_str());
-
-    // Wait for one connection attempt, then send exactly one HTTP response.
     if (!connectToWiFi(networkSsid, networkPassword, 15000)) {
-      sendWiFiPortalPage(
-          "Connection failed. Check the SSID and password, then try again. The failed profile was not saved.");
+      wifiWebServer.send(400, "application/json",
+                        "{\"success\":false,\"message\":\"Connection failed. Check the SSID and password.\"}");
       Serial.println(F("Connection failed; saved Wi-Fi list unchanged."));
       return;
     }
 
     if (!saveWiFiNetwork(networkSsid, networkPassword)) {
-      sendWiFiPortalPage(
-          "Connected, but the network profile could not be saved. The setup hotspot will remain active so you can try again.");
+      wifiWebServer.send(500, "application/json",
+                        "{\"success\":false,\"message\":\"Connected, but could not save the network.\"}");
       Serial.println(F("Connected, but could not save Wi-Fi credentials."));
       return;
     }
 
     WiFi.setAutoReconnect(true);
     startTimeSynchronization();
-    sendWiFiPortalPage(
-        "Connected successfully and network saved. The setup hotspot will now close.");
+    wifiWebServer.send(200, "application/json", "{\"success\":true}");
     delay(1200);
     stopWiFiPortal();
   });
