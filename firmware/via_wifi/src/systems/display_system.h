@@ -121,7 +121,7 @@ void renderDisplay(const struct tm& timeinfo, bool isTimeAvail) {
       if (WiFi.status() == WL_CONNECTED) {
         display.setCursor(10, 24);
         display.print("SYNCING TIME...");
-      } else if (wifiPortalActive) {
+      } else if (WiFi.getMode() == WIFI_AP_STA) {
         display.setCursor(0, 0);
         display.print("CONNECT TO WIFI");
         display.setCursor(0, 16);
