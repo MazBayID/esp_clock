@@ -1,6 +1,6 @@
-# ESP32-C3 SuperMini — Hardware Pinout
+# ESP32-C3 SuperMini — NEO CLOCK Hardware Pinout
 
-Hardware connection reference for **Neo Firmware — via Wi-Fi**.
+Hardware connection reference for the **NEO CLOCK** firmware.
 
 ## Board
 
@@ -57,6 +57,7 @@ Hardware connection reference for **Neo Firmware — via Wi-Fi**.
 
 - **Shared I2S clock:** The INMP441 and MAX98357A share the same clock lines: GPIO 1 (BCLK/SCK) and GPIO 2 (WS/LRC). Connect both devices' clock pins to the corresponding shared GPIO lines.
 - **Separate audio data:** The INMP441 sends audio data through GPIO 10, while the MAX98357A receives audio data through GPIO 5.
+- The current firmware configures I2S transmit for the MAX98357A only. Microphone input on GPIO 10 is documented hardware wiring, not an enabled firmware feature yet.
 - Verify that the firmware's I2S driver configuration supports using the microphone and amplifier with shared clock lines before enabling both devices simultaneously.
 - Ensure that all devices share a **common GND**.
 - Check each module's voltage and logic-level requirements before powering the circuit.
