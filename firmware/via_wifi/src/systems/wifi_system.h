@@ -195,7 +195,7 @@ void startTimeSynchronization() {
   String continentCode = "AS";
 
   if (detectNetworkTimeZone(utcOffsetSeconds, countryCode, continentCode)) {
-    Serial.printf("Detected location zone: %s / %s, UTC offset: %ld seconds.\\n",
+    Serial.printf("Detected location zone: %s / %s, UTC offset: %ld seconds.\n",
                   countryCode.c_str(), continentCode.c_str(),
                   utcOffsetSeconds);
   } else {
@@ -217,7 +217,7 @@ void startTimeSynchronization() {
   }
   ntpServer3 = getRegionalNtpServer(continentCode);
 
-  Serial.printf("Trying regional NTP: %s, %s, %s\\n",
+  Serial.printf("Trying regional NTP: %s, %s, %s\n",
                 ntpServer1.c_str(), ntpServer2.c_str(),
                 ntpServer3.c_str());
   configTime(utcOffsetSeconds, 0, ntpServer1.c_str(),
@@ -255,7 +255,7 @@ String jsonEscape(const String& value) {
       escaped += '\\';
       escaped += character;
     } else if (character == '\n') {
-      escaped += F("\\n");
+      escaped += F("\n");
     } else if (character == '\r') {
       escaped += F("\\r");
     } else if (static_cast<uint8_t>(character) >= 0x20) {
