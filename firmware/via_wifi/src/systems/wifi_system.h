@@ -319,7 +319,7 @@ void sendWiFiPortalPage() {
       popup.style.display='flex';
       button.disabled=true;
       try{
-        const response=await fetch('/connect',{method:'POST',body:new FormData(form)});
+        const response=await fetch('/connect',{method:'POST',body:new URLSearchParams(new FormData(form))});
         const result=await response.json();
         popupText.textContent=result.success?'Done':(result.message||'Connection failed. Please try again.');
         if(result.success){
