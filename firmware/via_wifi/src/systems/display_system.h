@@ -138,6 +138,58 @@ void renderDisplay(const struct tm& timeinfo, bool isTimeAvail) {
     }
   } else if (currentScreen == 1) {
     display.drawBitmap(32, 0, epd_bitmap_neo, 64, 64, SSD1306_WHITE);
+  } else if (currentScreen == 3) {
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    display.print("MENU");
+    display.drawFastHLine(0, 11, 128, SSD1306_WHITE);
+    const char* items[] = {"Clock Style", "Wi-Fi Status", "System Info"};
+    for (uint8_t i = 0; i < 3; ++i) {
+      const int y = 17 + i * 14;
+      if (menuSelection == i) {
+        display.fillRect(0, y - 2, 128, 12, SSD1306_WHITE);
+        display.setTextColor(SSD1306_BLACK);
+        display.setCursor(4, y);
+        display.print(">");
+        display.setCursor(16, y);
+        display.print(items[i]);
+        display.setTextColor(SSD1306_WHITE);
+      } else {
+        display.setCursor(16, y);
+        display.print(items[i]);
+      }
+    }
+    display.setCursor(0, 58);
+    display.print("UP/DOWN  OK  HOLD:BACK");
+  } else if (currentScreen == 4) {
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    display.print("SYSTEM INFORMATION");
+    display.drawFastHLine(0, 11, 128, SSD1306_WHITE);
+    display.setCursor(0, 17);
+    display.print("DEVICE: NEO CLOCK");
+    display.setCursor(0, 30);
+    display.print("BOARD: ESP32-C3");
+    display.setCursor(0, 43);
+    display.print("WIFI: ");
+    display.print(WiFi.status() == WL_CONNECTED ? "ONLINE" : "OFFLINE");
+    display.setCursor(0, 56);
+    display.print("TIME: ");
+    display.print(isTimeAvail ? "SYNCED" : "NOT SYNCED");
+  } else if (currentScreen == 5) {
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    display.print("CLOCK STYLE");
+    display.drawFastHLine(0, 11, 128, SSD1306_WHITE);
+    display.setTextSize(2);
+    display.setCursor(25, 22);
+    display.print("STYLE 0");
+    display.print(clockStyle + 1);
+    display.setTextSize(1);
+    display.setCursor(0, 52);
+    display.print("UP/DOWN TO CHANGE");
+    display.setCursor(0, 62);
+    display.print("OK: BACK  HOLD: EXIT");
   } else if (currentScreen == 2) {
     static unsigned long lastRssiSample = 0;
     static int sampledRssi = 0;
