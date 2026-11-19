@@ -65,13 +65,10 @@ void updateInput() {
     } else if (modePressActive) {
       if (!modeLongHandled) {
         beep(1);
-        if (currentScreen == 0) {
-          currentScreen = 1; // Brief NEO intro before the menu.
-          signalTimer = millis();
-        } else if (currentScreen == 3) {
+        if (currentScreen == 3) {
           openSelectedMenuItem();
         } else if (currentScreen == 5) {
-          currentScreen = 3;
+          currentScreen = 0; // Return directly to the clock.
         } else if (currentScreen == 2 || currentScreen == 4) {
           currentScreen = 3;
         }
@@ -84,9 +81,12 @@ void updateInput() {
       millis() - modePressStarted >= MENU_LONG_PRESS_MS) {
     modeLongHandled = true;
     beep(1);
-    if (currentScreen == 1 || currentScreen == 3 ||
-        currentScreen == 5 || currentScreen == 2 ||
-        currentScreen == 4) {
+    if (currentScreen == 0) {
+      currentScreen = 1; // Hold to enter the menu through the NEO intro.
+      signalTimer = millis();
+    } else if (currentScreen == 1 || currentScreen == 3 ||
+               currentScreen == 5 || currentScreen == 2 ||
+               currentScreen == 4) {
       currentScreen = 0;
     }
   }
