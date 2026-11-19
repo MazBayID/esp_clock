@@ -23,8 +23,8 @@ def to_xbm(image: Image.Image) -> bytes:
             value = 0
             for bit in range(8):
                 x = byte_x * 8 + bit
-                if x < width and image.getpixel((x, y)) == 0:
-                    value |= 1 << bit
+                if x < width and image.getpixel((x, y)) != 0:
+                    value |= 1 << (7 - bit)
             data.append(value)
     return bytes(data)
 
@@ -42,7 +42,7 @@ def main() -> None:
         with Image.open(path) as source:
             image = source.convert("RGBA")
             image.thumbnail(size, Image.Resampling.LANCZOS)
-            canvas = Image.new("RGBA", size, (255, 255, 255, 255))
+            canvas = Image.new("RGBA", size, (0, 0, 0, 255))
             x = (size[0] - image.width) // 2
             y = (size[1] - image.height) // 2
             canvas.alpha_composite(image, (x, y))
