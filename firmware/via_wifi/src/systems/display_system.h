@@ -127,10 +127,10 @@ void renderDisplay(const struct tm& timeinfo, bool isTimeAvail) {
         display.setCursor(0, 16);
         display.print("SSID: NEO_CLOCK");
 
-        const String instruction =
-            String("THEN OPEN HTTP://") + WiFi.softAPIP().toString();
-        display.setCursor(0, 42);
-        display.print(instruction);
+        display.setCursor(0, 38);
+        display.print("OPEN YOUR BROWSER");
+        display.setCursor(0, 50);
+        display.print(WiFi.softAPIP().toString());
       } else {
         display.setCursor(10, 24);
         display.print("CONNECTING TO WIFI");
