@@ -208,11 +208,11 @@ void startTimeSynchronization() {
       wifiPreferences.putString("tzCont", continentCode);
     }
 
-    Serial.printf("Detected location zone: %s / %s, UTC offset: %ld seconds.\\n",
+    Serial.printf("Detected location zone: %s / %s, UTC offset: %ld seconds.\n",
                   countryCode.c_str(), continentCode.c_str(),
                   utcOffsetSeconds);
   } else {
-    Serial.printf("Location lookup failed; using saved UTC offset: %ld seconds.\\n",
+    Serial.printf("Location lookup failed; using saved UTC offset: %ld seconds.\n",
                   utcOffsetSeconds);
   }
 
