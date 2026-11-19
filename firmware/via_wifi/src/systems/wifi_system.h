@@ -118,9 +118,129 @@ bool saveWiFiNetwork(const String& networkSsid,
   return saved;
 }
 
+// IP-based geolocation supplies the current UTC offset and country/continent.
+// The free ip-api endpoint is HTTP-only; it receives the network's public IP.
+volatile bool ntpSyncReceived = false;
+String ntpServer1;
+String ntpServer2;
+String ntpServer3;
+
+void onNtpTimeSync(struct timeval* timeValue) {
+  ntpSyncReceived = true;
+}
+
+String getRegionalNtpServer(const String& continentCode) {
+  if (continentCode == "AS") return "asia.pool.ntp.org";
+  if (continentCode == "EU") return "europe.pool.ntp.org";
+  if (continentCode == "NA") return "north-america.pool.ntp.org";
+  if (continentCode == "OC") return "oceania.pool.ntp.org";
+  if (continentCode == "SA") return "south-america.pool.ntp.org";
+  return "pool.ntp.org";
+}
+
+bool detectNetworkTimeZone(long& utcOffsetSeconds,
+                           String& countryCode,
+                           String& continentCode) {
+  WiFiClient client;
+  HTTPClient http;
+  http.setTimeout(5000);
+
+  if (!http.begin(client,
+      "http://ip-api.com/json/?fields=status,countryCode,continentCode,offset")) {
+    return false;
+  }
+
+  const int responseCode = http.GET();
+  if (responseCode != HTTP_CODE_OK) {
+    http.end();
+    return false;
+  }
+
+  JsonDocument document;
+  const DeserializationError error =
+      deserializeJson(document, http.getStream());
+  http.end();
+
+  if (error || document["status"] != "success") return false;
+
+  const long detectedOffset = document["offset"] | 0L;
+  const String detectedCountry = document["countryCode"] | "";
+  const String detectedContinent = document["continentCode"] | "";
+
+  if (detectedOffset < -43200L || detectedOffset > 50400L ||
+      detectedCountry.length() != 2 || detectedContinent.length() != 2) {
+    return false;
+  }
+
+  utcOffsetSeconds = detectedOffset;
+  countryCode = detectedCountry;
+  continentCode = detectedContinent;
+  return true;
+}
+
+bool waitForNtpSynchronization(uint32_t timeoutMs) {
+  const unsigned long startedAt = millis();
+
+  while (!ntpSyncReceived && millis() - startedAt < timeoutMs) {
+    delay(100);
+  }
+
+  return ntpSyncReceived;
+}
+
 void startTimeSynchronization() {
-  configTime(gmtOffset_sec, daylightOffset_sec, "ntp.bmkg.go.id");
-  Serial.println(F("Wi-Fi connected; NTP synchronization requested."));
+  long utcOffsetSeconds = gmtOffset_sec;
+  String countryCode = "ID";
+  String continentCode = "AS";
+
+  if (detectNetworkTimeZone(utcOffsetSeconds, countryCode, continentCode)) {
+    Serial.printf("Detected location zone: %s / %s, UTC offset: %ld seconds.\\n",
+                  countryCode.c_str(), continentCode.c_str(),
+                  utcOffsetSeconds);
+  } else {
+    Serial.println(F("Location lookup failed; using default UTC+7 settings."));
+  }
+
+  // Keep timezone independent from the NTP server selected below.
+  ntpSyncReceived = false;
+  sntp_set_time_sync_notification_cb(onNtpTimeSync);
+
+  if (countryCode == "ID") {
+    ntpServer1 = "ntp.bmkg.go.id";
+    ntpServer2 = "id.pool.ntp.org";
+  } else {
+    ntpServer1 = countryCode;
+    ntpServer1.toLowerCase();
+    ntpServer1 += ".pool.ntp.org";
+    ntpServer2 = getRegionalNtpServer(continentCode);
+  }
+  ntpServer3 = getRegionalNtpServer(continentCode);
+
+  Serial.printf("Trying regional NTP: %s, %s, %s\\n",
+                ntpServer1.c_str(), ntpServer2.c_str(),
+                ntpServer3.c_str());
+  configTime(utcOffsetSeconds, 0, ntpServer1.c_str(),
+             ntpServer2.c_str(), ntpServer3.c_str());
+
+  if (waitForNtpSynchronization(15000)) {
+    Serial.println(F("Regional NTP synchronization successful."));
+    return;
+  }
+
+  Serial.println(F("Regional NTP failed; switching to global NTP."));
+  ntpSyncReceived = false;
+  ntpServer1 = "pool.ntp.org";
+  ntpServer2 = "time.google.com";
+  ntpServer3 = "time.nist.gov";
+
+  configTime(utcOffsetSeconds, 0, ntpServer1.c_str(),
+             ntpServer2.c_str(), ntpServer3.c_str());
+
+  if (waitForNtpSynchronization(15000)) {
+    Serial.println(F("Global NTP synchronization successful."));
+  } else {
+    Serial.println(F("NTP synchronization failed; will retry on next Wi-Fi connection."));
+  }
 }
 
 String jsonEscape(const String& value) {
