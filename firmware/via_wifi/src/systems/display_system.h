@@ -68,7 +68,9 @@ void setupDisplay() {
 
   display.setRotation(2);
   display.clearDisplay();
+  display.drawBitmap(32, 0, epd_bitmap_neo_clock, 64, 64, SSD1306_WHITE);
   display.display();
+  delay(1800);
 }
 
 void drawWiFiIcon(int x, int y, uint8_t bars) {
@@ -103,7 +105,7 @@ void renderDisplay(const struct tm& timeinfo, bool isTimeAvail) {
 
   if (currentScreen == 0) {
     if (isTimeAvail) {
-      drawCustomClock(timeinfo, 20, 10, 110, 10);
+      drawCustomClock(timeinfo, 20, 20, 110, 10);
 
       if (clockFace != 0 && clockStyle != 3 && clockStyle != 5) {
         display.setTextSize(1);
@@ -116,13 +118,34 @@ void renderDisplay(const struct tm& timeinfo, bool isTimeAvail) {
       }
     } else {
       display.setTextSize(1);
-      display.setCursor(10, 24);
-      display.print(WiFi.status() == WL_CONNECTED
-                      ? "Syncing time..."
-                      : "Waiting for Wi-Fi...");
+      if (WiFi.status() == WL_CONNECTED) {
+        display.setCursor(10, 24);
+        display.print("SYNCING TIME...");
+      } else if (wifiPortalActive) {
+        display.setCursor(0, 0);
+        display.print("CONNECT TO WIFI");
+        display.setCursor(0, 16);
+        display.print("SSID: NEO_CLOCK");
+
+        static unsigned long lastScrollUpdate = 0;
+        static uint16_t scrollOffset = 0;
+        const String instruction =
+            String("THEN OPEN HTTP://") + WiFi.softAPIP().toString() +
+            " ON YOUR BROWSER";
+        const uint16_t textWidth = instruction.length() * 6;
+        if (millis() - lastScrollUpdate >= 35) {
+          lastScrollUpdate = millis();
+          scrollOffset = (scrollOffset + 1) % (textWidth + SCREEN_WIDTH);
+        }
+        display.setCursor(SCREEN_WIDTH - scrollOffset, 42);
+        display.print(instruction);
+      } else {
+        display.setCursor(10, 24);
+        display.print("CONNECTING TO WIFI");
+      }
     }
   } else if (currentScreen == 1) {
-    display.drawBitmap(32, 0, epd_bitmap_neo_clock, 64, 64, SSD1306_WHITE);
+    display.drawBitmap(32, 0, epd_bitmap_neo, 64, 64, SSD1306_WHITE);
   } else if (currentScreen == 2) {
     static unsigned long lastRssiSample = 0;
     static int sampledRssi = 0;
