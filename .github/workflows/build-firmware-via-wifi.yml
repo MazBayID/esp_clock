@@ -76,7 +76,7 @@ jobs:
             --variant via_wifi \
             --build-dir build/neo-clock \
             --output-dir dist/via_wifi \
-            --git-sha "$GITHUB_SHA" \\
+            --git-sha "$GITHUB_SHA" \
             --build-id "$BUILD_ID"
 
       - name: Upload firmware package
