@@ -51,6 +51,24 @@ jobs:
           python tools/configure_gpio.py --variant mochi_chronos
           python -m unittest discover -s tests -v
 
+      - name: Notify Firmware Builder that build started
+        if: ${{ inputs.build_id != '' }}
+        continue-on-error: true
+        env:
+          CALLBACK_URL: https://ymjhfaplponxbjhpvhuq.supabase.co/functions/v1/firmware-build-callback
+          CALLBACK_SECRET: ${{ secrets.FIRMWARE_BUILDER_CALLBACK_SECRET }}
+          BUILD_ID: ${{ inputs.build_id }}
+        run: |
+          if [ -z "$CALLBACK_SECRET" ]; then
+            echo "::warning::Firmware Builder callback secret is not configured"
+            exit 0
+          fi
+          payload="$(python -c 'import json,os; print(json.dumps({"event":"started","build_id":os.environ["BUILD_ID"],"run_id":int(os.environ["GITHUB_RUN_ID"]),"run_attempt":int(os.environ["GITHUB_RUN_ATTEMPT"]),"source_commit_sha":os.environ["GITHUB_SHA"]}))')"
+          curl --fail-with-body --silent --show-error -X POST "$CALLBACK_URL" \
+            -H "Authorization: Bearer $CALLBACK_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -96,6 +114,7 @@ jobs:
             --build-id "$BUILD_ID"
 
       - name: Upload firmware package
+        id: upload_package
         uses: actions/upload-artifact@v4
         with:
           name: neo-clock-mochi-chronos-${{ github.sha }}
@@ -110,3 +129,23 @@ jobs:
           path: firmware/mochi_chronos/.pio/build/esp32-c3-supermini-audio/firmware.bin
           if-no-files-found: error
           retention-days: 30
+
+      - name: Report Firmware Builder completion
+        if: ${{ always() && inputs.build_id != '' }}
+        continue-on-error: true
+        env:
+          CALLBACK_URL: https://ymjhfaplponxbjhpvhuq.supabase.co/functions/v1/firmware-build-callback
+          CALLBACK_SECRET: ${{ secrets.FIRMWARE_BUILDER_CALLBACK_SECRET }}
+          BUILD_ID: ${{ inputs.build_id }}
+          JOB_STATUS: ${{ job.status }}
+          ARTIFACT_ID: ${{ steps.upload_package.outputs.artifact-id }}
+        run: |
+          if [ -z "$CALLBACK_SECRET" ]; then
+            echo "::warning::Firmware Builder callback secret is not configured"
+            exit 0
+          fi
+          payload="$(python -c 'import json,os; print(json.dumps({"event":"completed","build_id":os.environ["BUILD_ID"],"run_id":int(os.environ["GITHUB_RUN_ID"]),"run_attempt":int(os.environ["GITHUB_RUN_ATTEMPT"]),"artifact_id":int(os.environ["ARTIFACT_ID"]) if os.environ.get("ARTIFACT_ID") else None,"job_status":os.environ["JOB_STATUS"],"source_commit_sha":os.environ["GITHUB_SHA"]}))')"
+          curl --fail-with-body --silent --show-error -X POST "$CALLBACK_URL" \
+            -H "Authorization: Bearer $CALLBACK_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
