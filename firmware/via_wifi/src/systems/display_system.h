@@ -6,6 +6,9 @@
 #include "../assets/default/digits/style01.h"
 #include "../assets/default/digits/style02.h"
 #include "../assets/default/digits/style03.h"
+#include "../assets/default/digits/style04.h"
+#include "../assets/default/digits/style05.h"
+#include "../assets/default/digits/style06.h"
 
 const unsigned char* getDigitBitmap(int number) {
   if (number < 0 || number > 9) return nullptr;
@@ -14,8 +17,21 @@ const unsigned char* getDigitBitmap(int number) {
     case 0: return ClockStyle01::epd_bitmap_allArray[number];
     case 1: return ClockStyle02::epd_bitmap_allArray[number];
     case 2: return ClockStyle03::epd_bitmap_allArray[number];
+    case 3: return ClockStyle04::ClockStyle04_allArray[number];
+    case 4: return ClockStyle05::ClockStyle05_allArray[number];
+    case 5: return ClockStyle06::ClockStyle06_allArray[number];
     default: return ClockStyle03::epd_bitmap_allArray[number];
   }
+}
+
+int getClockDigitWidth() {
+  return clockStyle >= 3 ? 25 : 24;
+}
+
+int getClockDigitHeight() {
+  if (clockStyle == 3 || clockStyle == 5) return 48;
+  if (clockStyle == 4) return 25;
+  return 24;
 }
 
 const unsigned char* getClockColonBitmap() {
@@ -23,6 +39,9 @@ const unsigned char* getClockColonBitmap() {
     case 0: return ClockStyle01::epd_bitmap_allArray[10];
     case 1: return ClockStyle02::epd_bitmap_allArray[10];
     case 2: return ClockStyle03::epd_bitmap_allArray[10];
+    case 3: return ClockStyle04::ClockStyle04_allArray[10];
+    case 4: return ClockStyle05::ClockStyle05_allArray[10];
+    case 5: return ClockStyle06::ClockStyle06_allArray[10];
     default: return ClockStyle03::epd_bitmap_allArray[10];
   }
 }
@@ -31,7 +50,8 @@ void drawDigit(int x, int y, int number) {
   const unsigned char* bitmap = getDigitBitmap(number);
   if (bitmap == nullptr) return;
 
-  display.drawBitmap(x, y, bitmap, 24, 24, SSD1306_WHITE);
+  display.drawBitmap(x, y, bitmap, getClockDigitWidth(),
+                    getClockDigitHeight(), SSD1306_WHITE);
 }
 
 void setupDisplay() {
