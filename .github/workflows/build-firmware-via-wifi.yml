@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: neo-clock-build-${{ github.ref }}
-  cancel-in-progress: true
+  group: neo-clock-build-${{ github.workflow }}-${{ github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   build-esp32-c3:
@@ -50,29 +50,18 @@ jobs:
         run: |
           arduino-cli compile --fqbn esp32:esp32:esp32c3 --warnings all --output-dir build/neo-clock firmware/via_wifi
 
-      - name: Package firmware binaries
+      - name: Package standardized firmware downloads
         run: |
-          mkdir -p dist
-          cp build/neo-clock/*.bin dist/
-          cat > dist/FLASH-INSTRUCTIONS.txt <<'EOF'
-          NEO CLOCK - ESP32-C3 SuperMini
+          python tools/package_firmware.py \
+            --variant via_wifi \
+            --build-dir build/neo-clock \
+            --output-dir dist/via_wifi \
+            --git-sha "$GITHUB_SHA"
 
-          Default ESP32-C3 Arduino flash offsets:
-            bootloader  : 0x0000
-            partitions  : 0x8000
-            boot_app0   : 0xE000
-            application : 0x10000
-
-          Use an ESP32 flashing tool and match each binary to its offset.
-          Select the ESP32-C3 target and the serial port for your board.
-          EOF
-          cd dist
-          zip -9 "../NEO-CLOCK-ESP32-C3-${GITHUB_SHA::7}.zip" ./*.bin FLASH-INSTRUCTIONS.txt
-
-      - name: Upload firmware artifact
+      - name: Upload firmware package
         uses: actions/upload-artifact@v4
         with:
-          name: NEO-CLOCK-ESP32-C3-${{ github.sha }}
-          path: NEO-CLOCK-ESP32-C3-*.zip
+          name: neo-clock-via-wifi-${{ github.sha }}
+          path: dist/via_wifi/*
           if-no-files-found: error
           retention-days: 30
