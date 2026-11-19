@@ -148,6 +148,7 @@ def main() -> None:
     parser.add_argument("--build-dir", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--git-sha", required=True)
+    parser.add_argument("--build-id", default="")
     args = parser.parse_args()
 
     if args.output_dir.exists():
@@ -189,6 +190,7 @@ def main() -> None:
             "firmware.bin": f"0x{APP_OFFSET:04X}",
         },
         "git_sha": args.git_sha,
+        "build_id": args.build_id or None,
         "clean_install": True,
     }
     (args.output_dir / "build-info.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
