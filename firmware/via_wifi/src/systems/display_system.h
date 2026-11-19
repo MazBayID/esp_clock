@@ -159,8 +159,8 @@ void renderDisplay(const struct tm& timeinfo, bool isTimeAvail) {
         display.print(items[i]);
       }
     }
-    display.setCursor(0, 58);
-    display.print("UP/DOWN  OK  HOLD:BACK");
+    display.setCursor(0, 56);
+    display.print("UP/DN  OK:SELECT");
   } else if (currentScreen == 4) {
     display.setTextSize(1);
     display.setCursor(0, 0);
@@ -188,8 +188,8 @@ void renderDisplay(const struct tm& timeinfo, bool isTimeAvail) {
     display.setTextSize(1);
     display.setCursor(0, 52);
     display.print("UP/DOWN TO CHANGE");
-    display.setCursor(0, 62);
-    display.print("OK: BACK  HOLD: EXIT");
+    display.setCursor(0, 56);
+    display.print("OK:BACK  HOLD:EXIT");
   } else if (currentScreen == 2) {
     static unsigned long lastRssiSample = 0;
     static int sampledRssi = 0;
