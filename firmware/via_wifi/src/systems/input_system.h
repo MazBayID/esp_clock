@@ -16,10 +16,10 @@ void updateInput() {
     signalTimer = millis();
   }
 
-  // Tombol NEXT (GPIO6): Siklus Style 01 -> 02 -> 03 -> 01
+  // NEXT: siklus enam style clock.
   if (nextState == HIGH && lastNextState == LOW) {
     beep(1);
-    clockStyle = (clockStyle + 1) % 3;
+    clockStyle = (clockStyle + 1) % 6;
     currentScreen = 0;
 
     Serial.print(F("Clock style aktif: Style 0"));
