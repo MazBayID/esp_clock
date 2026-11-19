@@ -40,6 +40,12 @@ jobs:
           arduino-cli lib install "Adafruit SSD1306"
           arduino-cli lib install "ArduinoJson"
 
+      - name: Install asset processing dependency
+        run: python -m pip install --disable-pip-version-check Pillow
+
+      - name: Generate optimized monochrome UI bitmaps
+        run: python tools/process_assets.py
+
       - name: Compile NEO CLOCK firmware
         run: |
           arduino-cli compile --fqbn esp32:esp32:esp32c3 --warnings all --output-dir build/neo-clock firmware/via_wifi
