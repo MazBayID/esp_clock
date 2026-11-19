@@ -283,7 +283,7 @@ String jsonEscape(const String& value) {
 void sendWiFiPortalPage(const String& message = "") {
   String page = R"NEOPAGE(
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -310,46 +310,46 @@ void sendWiFiPortalPage(const String& message = "") {
 <main>
   <div class="mark">NEO FIRMWARE</div>
   <h1>NEO CLOCK</h1>
-  <p>Hubungkan perangkat ke jaringan Wi-Fi untuk mengaktifkan koneksi internet dan sinkronisasi waktu.</p>
-  <p class="note">Jaringan tersimpan: <strong id="count">0</strong> / 5. Jika penuh, jaringan paling lama akan digantikan.</p>
-  <button class="secondary" type="button" onclick="scanNetworks()">Cari jaringan Wi-Fi</button>
-  <label for="networks">Jaringan yang ditemukan</label>
+  <p>Connect your device to a Wi-Fi network to enable internet access and time synchronization.</p>
+  <p class="note">Saved networks: <strong id="count">0</strong> / 5. When the list is full, the oldest network will be replaced.</p>
+  <button class="secondary" type="button" onclick="scanNetworks()">Scan for Wi-Fi networks</button>
+  <label for="networks">Available networks</label>
   <select id="networks" onchange="selectNetwork()">
-    <option value="">Pilih jaringan (opsional)</option>
+    <option value="">Select a network (optional)</option>
   </select>
   <form method="POST" action="/save">
-    <label for="ssid">Nama Wi-Fi (SSID)</label>
+    <label for="ssid">Wi-Fi Name (SSID)</label>
     <input id="ssid" name="ssid" maxlength="32" autocomplete="username" required>
-    <label for="password">Password Wi-Fi</label>
+    <label for="password">Wi-Fi Password</label>
     <input id="password" name="password" type="password" maxlength="63" autocomplete="current-password">
-    <p class="note">Biarkan password kosong jika jaringan tidak menggunakan password.</p>
-    <button type="submit">Simpan &amp; Sambungkan</button>
+    <p class="note">Leave the password empty if the network is open.</p>
+    <button type="submit">Save &amp; Connect</button>
   </form>
   <div id="message" class="message" hidden></div>
-  <div class="footer note">Hotspot konfigurasi: <strong>NEO_CLOCK</strong> · Alamat: 192.168.4.1</div>
+  <div class="footer note">Setup hotspot: <strong>NEO_CLOCK</strong> · Address: 192.168.4.1</div>
 </main>
 <script>
 async function scanNetworks(){
   const button=document.querySelector('button.secondary');
   const select=document.getElementById('networks');
-  button.textContent='Memindai...';
+  button.textContent='Scanning...';
   button.disabled=true;
   try{
     const response=await fetch('/scan');
     const data=await response.json();
-    select.innerHTML='<option value="">Pilih jaringan (opsional)</option>';
+    select.innerHTML='<option value="">Select a network (optional)</option>';
     data.networks.forEach(network=>{
       const option=document.createElement('option');
       option.value=network.ssid;
-      option.textContent=network.ssid+' ('+network.rssi+' dBm)'+(network.secure?' · terkunci':' · terbuka');
+      option.textContent=network.ssid+' ('+network.rssi+' dBm)'+(network.secure?' · secured':' · open');
       select.appendChild(option);
     });
   }catch(error){
     const message=document.getElementById('message');
     message.hidden=false;
-    message.textContent='Pemindaian gagal. Masukkan SSID secara manual.';
+    message.textContent='Network scan failed. Enter the SSID manually.';
   }
-  button.textContent='Cari jaringan Wi-Fi';
+  button.textContent='Scan for Wi-Fi networks';
   button.disabled=false;
 }
 function selectNetwork(){
@@ -449,7 +449,7 @@ void startWiFiPortal() {
 
     if (networkSsid.length() == 0 || networkSsid.length() > 32 ||
         networkPassword.length() > 63) {
-      sendWiFiPortalPage("SSID atau password tidak valid. Periksa kembali.");
+      sendWiFiPortalPage("Invalid SSID or password. Please check your entries.");
       return;
     }
 
@@ -458,14 +458,14 @@ void startWiFiPortal() {
     // Wait for one connection attempt, then send exactly one HTTP response.
     if (!connectToWiFi(networkSsid, networkPassword, 15000)) {
       sendWiFiPortalPage(
-          "Gagal tersambung. Periksa SSID dan password, lalu coba lagi. Profil yang gagal tidak disimpan.");
+          "Connection failed. Check the SSID and password, then try again. The failed profile was not saved.");
       Serial.println(F("Connection failed; saved Wi-Fi list unchanged."));
       return;
     }
 
     if (!saveWiFiNetwork(networkSsid, networkPassword)) {
       sendWiFiPortalPage(
-          "Terhubung, tetapi profil tidak dapat disimpan. Hotspot tetap aktif agar kamu bisa mencoba lagi.");
+          "Connected, but the network profile could not be saved. The setup hotspot will remain active so you can try again.");
       Serial.println(F("Connected, but could not save Wi-Fi credentials."));
       return;
     }
@@ -473,7 +473,7 @@ void startWiFiPortal() {
     WiFi.setAutoReconnect(true);
     startTimeSynchronization();
     sendWiFiPortalPage(
-        "Berhasil tersambung dan jaringan telah disimpan. Hotspot konfigurasi akan ditutup.");
+        "Connected successfully and network saved. The setup hotspot will now close.");
     delay(1200);
     stopWiFiPortal();
   });
