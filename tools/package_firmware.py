@@ -4,6 +4,7 @@
 This script only packages already-built firmware. It does not compile firmware
 or accept arbitrary user-supplied code/configuration.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -18,6 +19,7 @@ CHIP = "esp32c3"
 FLASH_MODE = "dio"
 FLASH_FREQ = "80m"
 FLASH_SIZE = "4MB"
+FLASH_SIZE_BYTES = 4 * 1024 * 1024
 APP_OFFSET = 0x10000
 PARTITION_OFFSET = 0x8000
 BOOTLOADER_OFFSET = 0x0000
@@ -67,18 +69,21 @@ def write_instructions(path: Path, variant: str, has_boot_app0: bool) -> None:
         "",
         "IMPORTANT:",
         "- Use files from this ZIP together; never mix files from different builds.",
-        "- A full install overwrites the corresponding flash regions and resets",
-        "  existing firmware data/configuration in those regions.",
+        "- A full clean install erases the entire 4 MB flash, including saved settings.",
         "- Disconnect/reconnect the board if the serial port disappears after reset.",
         "- If flashing fails, hold BOOT, tap RESET, release BOOT, then retry.",
         "",
         "For a simpler installation, use the separate merged.bin at flash offset 0x0000.",
         "",
-        "Example PC command (replace PORT with the serial port):",
-        "  esptool --chip esp32c3 --port PORT --baud 460800 write-flash --flash-mode dio --flash-freq 80m --flash-size 4MB",
-        "  0x0000 bootloader.bin 0x8000 partitions.bin",
-        *(["  0xE000 boot_app0.bin"] if has_boot_app0 else []),
-        "  0x10000 firmware.bin",
+        "Example PC commands (replace PORT with the serial port):",
+        "  esptool --chip esp32c3 --port PORT erase-flash",
+        "  esptool --chip esp32c3 --port PORT --baud 460800 write-flash --flash-mode dio --flash-freq 80m --flash-size 4MB "
+        + "0x0000 bootloader.bin 0x8000 partitions.bin "
+        + ("0xE000 boot_app0.bin " if has_boot_app0 else "")
+        + "0x10000 firmware.bin",
+        "",
+        "App-only update (existing matching partition layout): flash firmware.bin at 0x10000",
+        "without erasing flash or rewriting bootloader/partition data.",
     ])
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -99,6 +104,8 @@ def package_arduino(build_dir: Path, out_dir: Path) -> dict:
         )
 
     merged = merged_matches[0].read_bytes()
+    if len(merged) != FLASH_SIZE_BYTES:
+        raise SystemExit(f"Arduino merged image must be exactly {FLASH_SIZE} (got {len(merged)} bytes)")
     if len(merged) < BOOT_APP0_OFFSET + BOOT_APP0_SIZE:
         raise SystemExit("Arduino merged image is too small to contain boot_app0 data")
     boot_app0 = merged[BOOT_APP0_OFFSET:BOOT_APP0_OFFSET + BOOT_APP0_SIZE]
@@ -122,13 +129,16 @@ def package_platformio(build_dir: Path, out_dir: Path) -> dict:
     if not merged_source.is_file():
         raise SystemExit(f"Required merged image not found: {merged_source}")
     merged = merged_source.read_bytes()
+    if len(merged) > FLASH_SIZE_BYTES:
+        raise SystemExit(f"Merged image exceeds the configured {FLASH_SIZE} flash size")
     bootloader = build_dir / "bootloader.bin"
     partitions = build_dir / "partitions.bin"
     app_file = build_dir / "firmware.bin"
     validate_segment(merged, bootloader, BOOTLOADER_OFFSET, "bootloader")
     validate_segment(merged, partitions, PARTITION_OFFSET, "partition table")
     validate_segment(merged, app_file, APP_OFFSET, "application")
-    copy_required(merged_source, out_dir / "merged.bin")
+    # Pad with erased-flash bytes so every clean-install method covers the full 4 MB.
+    (out_dir / "merged.bin").write_bytes(merged.ljust(FLASH_SIZE_BYTES, b"\xFF"))
     advanced_dir = out_dir / "_advanced"
     copy_required(bootloader, advanced_dir / "bootloader.bin")
     copy_required(partitions, advanced_dir / "partitions.bin")
