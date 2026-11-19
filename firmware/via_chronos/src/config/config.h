@@ -31,10 +31,11 @@
 #define PIN_NEXT 6
 #define PIN_MODE 7
 
-#define DISPLAY_REFRESH_MS 200
+#define DISPLAY_REFRESH_MS 100
 
 extern Adafruit_SSD1306 display;
 extern ChronosESP32 watch;
+extern uint8_t clockStyle;
 
 extern volatile bool chronosConnected;
 extern volatile bool chronosTimeSynced;
@@ -42,6 +43,9 @@ extern volatile bool chronosTimeChanged;
 
 void setupChronos();
 void updateChronos();
+void setupInput();
+void updateInput();
 void renderDisplay();
+void setupDisplay();
 
 #endif
