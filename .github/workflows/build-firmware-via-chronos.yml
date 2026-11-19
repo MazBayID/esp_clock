@@ -29,6 +29,12 @@ jobs:
       - name: Install Arduino CLI
         uses: arduino/setup-arduino-cli@v2
 
+      - name: Install asset processing dependency
+        run: python -m pip install Pillow
+
+      - name: Generate NEO CLOCK UI assets
+        run: python tools/process_assets.py firmware/via_chronos/src/assets/generated/ui_assets.h
+
       - name: Install ESP32 platform
         run: |
           arduino-cli core update-index --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
