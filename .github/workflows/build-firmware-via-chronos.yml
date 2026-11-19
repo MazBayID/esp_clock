@@ -79,7 +79,7 @@ jobs:
             --variant via_chronos \
             --build-dir build/neo-clock-chronos \
             --output-dir dist/via_chronos \
-            --git-sha "$GITHUB_SHA" \\
+            --git-sha "$GITHUB_SHA" \
             --build-id "$BUILD_ID"
 
       - name: Upload firmware package
