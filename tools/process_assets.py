@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Resize original UI PNGs and generate compact monochrome firmware bitmaps."""
 from pathlib import Path
+import sys
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "assets_master"
-OUTPUT = ROOT / "firmware/via_wifi/src/assets/generated/ui_assets.h"
+DEFAULT_OUTPUT = ROOT / "firmware/via_wifi/src/assets/generated/ui_assets.h"
 
 ASSETS = {}
 
@@ -79,9 +80,12 @@ def main() -> None:
         values = ",".join(f"0x{byte:02X}" for byte in data)
         lines.append(f"static const unsigned char {name}[] PROGMEM = {{{values}}};")
     lines.extend(["}", "#endif", ""])
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text("\n".join(lines), encoding="utf-8")
-    print(f"Generated {OUTPUT.relative_to(ROOT)} ({len(ASSETS)} bitmaps)")
+    output = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_OUTPUT
+    if not output.is_absolute():
+        output = ROOT / output
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Generated {output.relative_to(ROOT)} ({len(ASSETS)} bitmaps)")
 
 if __name__ == "__main__":
     main()
