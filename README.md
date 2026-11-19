@@ -1,73 +1,107 @@
-# NEO CLOCK Firmware
+# NEO CLOCK
 
-**NEO CLOCK** is the first device firmware built on the Neo Firmware foundation for the ESP32-C3 SuperMini.
+**NEO CLOCK** is an ESP32-C3-based smart clock project with a 128×64 OLED display. The repository now contains multiple independent firmware implementations exploring different connectivity, interface, and companion-device features.
 
-The active firmware implementation is:
+Each firmware is maintained as a separate target. They share the intended hardware platform, but their code, features, build process, and maturity are different. Building or changing one target should not affect the others.
 
-- **NEO CLOCK (via_wifi)** — the current product firmware, using Wi-Fi for network connectivity and automatic time synchronization.
-- **via_chronos_app** — a future firmware track for the Chronos Android app. Development is postponed until NEO CLOCK is complete and stable.
+## Firmware targets
 
-## Repository layout
+| Firmware | Connectivity | Overview | Status |
+|---|---|---|---|
+| [via_wifi](firmware/via_wifi/) | Wi-Fi | Standalone clock, network time synchronization, saved Wi-Fi profiles, setup portal, OLED UI, and touch/audio feedback | Main Wi-Fi firmware |
+| [via_chronos](firmware/via_chronos/) | Bluetooth LE / Chronos | Phone-synchronized clock, clock styles, BLE status, startup logo, and touch controls | Early BLE implementation; hardware validation pending |
+| [mochi_chronos](firmware/mochi_chronos/) | Bluetooth LE / Chronos | Animated companion interface, mood animations, phone notifications/data, navigation, music metadata, settings, and optional audio | Independent feature-rich firmware; see its README for build and feature details |
 
-~~~text
-assets_master/                         # Incoming original UI assets and manifest
-firmware/
-├── via_wifi/                          # NEO CLOCK product firmware
-│   ├── via_wifi.ino
-│   └── src/
-│       ├── config/
-│       ├── systems/
-│       └── assets/default/
-└── via_chronos_app/                   # Future Chronos BLE firmware
-.github/workflows/
-├── build-firmware-via-wifi.yml
-└── build-firmware-via-chronos-app.yml
-~~~
+These firmware targets are **not interchangeable feature sets**. Choose the firmware that matches the experience you want to run.
 
-The via_wifi directory and sketch name are intentionally retained as implementation/build identifiers. The firmware product name is **NEO CLOCK**.
+### Firmware documentation
 
-## Hardware target
+- **[via_wifi README](firmware/via_wifi/)** — Wi-Fi clock firmware and setup.
+- **[via_chronos README](firmware/via_chronos/README.md)** — BLE clock implementation, pairing, controls, and milestone status.
+- **[mochi_chronos README](firmware/mochi_chronos/README.md)** — companion firmware, supported features, controls, audio options, and build instructions.
 
-- ESP32-C3 SuperMini
-- SSD1306 OLED, 128x64, I2C
-- MAX98357A I2S audio amplifier
-- TTP223 touch inputs
-- INMP441 I2S microphone (documented pin mapping; firmware integration is not enabled yet)
+## Hardware platform
 
-Pin assignments are defined in firmware/via_wifi/src/config/config.h and documented in [PINOUT.md](firmware/via_wifi/PINOUT.md).
+The firmware targets the ESP32-C3 SuperMini with a 128×64 SSD1306 OLED.
 
-## Current firmware capabilities
+The intended shared hardware configuration is:
 
-- Digital clock with three built-in digit styles.
-- Wi-Fi connection using saved network profiles.
-- NTP time synchronization through ntp.bmkg.go.id.
-- Local Wi-Fi setup portal hosted as NEO_CLOCK.
-- OLED status screen and web quote screen.
-- Touch input and audio beep feedback.
+| Component | Connection |
+|---|---|
+| ESP32-C3 SuperMini | Main MCU |
+| SSD1306 OLED, 128×64, I²C address 0x3C | SDA GPIO21, SCL GPIO20 |
+| MAX98357A I²S amplifier | BCLK GPIO1, LRC GPIO2, DIN GPIO5 |
+| INMP441 I²S microphone | SCK GPIO1, WS GPIO2, SD GPIO10 |
+| TTP223 touch buttons | GPIO4, GPIO6, GPIO7 |
+| Optional passive piezo buzzer | GPIO3 (Mochi target; disabled by default) |
 
-## Wi-Fi setup portal
+The amplifier and microphone share I²S clock pins. Microphone/audio operation is not enabled by default in the Mochi firmware; full-duplex operation must be validated before enabling simultaneous capture and playback.
 
-The firmware stores up to **5 Wi-Fi profiles** in ESP32 NVS Preferences.
+For the detailed Wi-Fi firmware wiring, see [via_wifi PINOUT](firmware/via_wifi/PINOUT.md). Firmware-specific control mappings and hardware notes are documented in each target's README.
 
-1. At startup, NEO CLOCK scans for saved networks and tries the networks it can currently see, starting with the most recently added profile.
-2. If no profile is saved, or no saved SSID is found or can be connected to, NEO CLOCK creates an open hotspot named NEO_CLOCK.
-3. Connect a phone to NEO_CLOCK. The captive portal should open automatically. If it does not, open http://192.168.4.1 in a browser.
-4. Select a nearby network from the scan list or enter its SSID manually, then enter the password. A profile is saved only after the connection succeeds.
-5. When five profiles are already stored, adding a sixth distinct network removes the oldest profile (FIFO). Updating an existing SSID refreshes its password and moves it to the newest position. Failed connection attempts do not change the saved list.
+## Repository structure
 
-The setup hotspot is open and intended for local configuration only. Anyone nearby can join while it is active, so configure NEO CLOCK in a trusted environment. Wi-Fi credentials are stored in ESP32 NVS; flash encryption is not enabled by this firmware.
+```text
+.
+├── assets_master/                  # Original/source UI assets and asset manifest
+├── firmware/
+│   ├── via_wifi/                  # Wi-Fi clock firmware
+│   ├── via_chronos/               # BLE Chronos clock firmware
+│   └── mochi_chronos/              # Mochi-inspired Chronos companion firmware
+├── tools/
+│   └── process_assets.py           # Asset processing for the Arduino targets
+└── .github/workflows/
+    ├── build-firmware-via-wifi.yml
+    ├── build-firmware-via-chronos.yml
+    └── build-firmware-mochi-chronos.yml
+```
 
-## GitHub Actions builds
+Each firmware folder contains its own source code and target-specific documentation. The Mochi target also has its own asset generator and PlatformIO configuration.
 
-- .github/workflows/build-firmware-via-wifi.yml builds the NEO CLOCK firmware for ESP32-C3 on pushes, pull requests targeting main, and manual dispatch.
-- .github/workflows/build-firmware-via-chronos-app.yml is a disabled placeholder. It does not compile or package anything yet.
+## Building firmware
 
-After a successful build, download the **NEO-CLOCK-ESP32-C3** ZIP from the workflow run's **Artifacts** section.
+Build requirements depend on the selected target. Refer to that target's README for exact dependencies and commands.
+
+### via_wifi
+
+Uses Arduino CLI and the ESP32 Arduino core. Its GitHub Actions workflow compiles the firmware and packages binaries with flash instructions.
+
+### via_chronos
+
+Uses Arduino CLI and the ESP32 Arduino core, with Chronos BLE-related libraries and generated UI assets. Its workflow builds and packages the BLE firmware separately from via_wifi.
+
+### mochi_chronos
+
+Uses PlatformIO. The default build disables optional audio; an additional audio-enabled environment is available. Its workflow generates assets and builds both configurations.
+
+## GitHub Actions
+
+The repository provides independent build workflows:
+
+- [Build NEO CLOCK - ESP32-C3](.github/workflows/build-firmware-via-wifi.yml)
+- [Build NEO CLOCK - via Chronos BLE](.github/workflows/build-firmware-via-chronos.yml)
+- [Build Mochi Chronos Firmware](.github/workflows/build-firmware-mochi-chronos.yml)
+
+Workflows can be triggered by their configured push/PR events or manually through GitHub Actions where enabled. Build artifacts are available from successful workflow runs. **A successful CI build confirms compilation and packaging only; it does not replace testing on the physical device.**
 
 ## Asset workflow
 
-The current clock digit styles remain built-in defaults under
-firmware/via_wifi/src/assets/default/digits/.
+Original and incoming UI assets are collected in [assets_master](assets_master/). This directory is the source/reference library—not automatically the runtime asset directory for every firmware.
 
-Upload original UI assets and their manifest to assets_master/. They will be
-reviewed first, then placed or converted into the appropriate runtime folders.
+Assets are reviewed, converted, or generated for the target firmware as needed. Firmware-specific generated files should remain in their respective target folders so that asset processing for one firmware does not overwrite another firmware's assets.
+
+See [assets_master README](assets_master/README.md) for the asset organization and handling guidelines.
+
+## Development status
+
+NEO CLOCK is an evolving project. Firmware targets are developed and validated independently, and feature availability varies by target.
+
+- **via_wifi:** Wi-Fi clock implementation with network time and Wi-Fi configuration support.
+- **via_chronos:** BLE/Chronos integration milestone; physical pairing, synchronization, display, and control testing remain important validation steps.
+- **mochi_chronos:** separate companion-style firmware with a wider feature set. Optional audio and hardware-specific behavior require testing on the actual board.
+
+Check the relevant firmware README and workflow run before flashing. Use the firmware image intended for your target and follow its flash instructions.
+
+---
+
+*Project firmware and hardware notes are maintained in the individual target folders. This root README provides an overview of the repository as a whole.*
