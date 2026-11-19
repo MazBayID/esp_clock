@@ -14,8 +14,6 @@ int currentScreen = 0;
 int clockFace = 0;
 uint8_t clockStyle = 2; // Default asset: Style 03.
 unsigned long signalTimer = 0;
-unsigned long quoteTimer = 0;
-String currentQuote = "";
 int lastHour = -1;
 
 bool lastTalkState = LOW;
@@ -25,7 +23,6 @@ bool lastModeState = LOW;
 #include "src/systems/display_system.h"
 #include "src/systems/audio_system.h"
 #include "src/systems/wifi_system.h"
-#include "src/systems/quote_system.h"
 #include "src/systems/clock_system.h"
 #include "src/systems/input_system.h"
 
