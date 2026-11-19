@@ -190,16 +190,30 @@ bool waitForNtpSynchronization(uint32_t timeoutMs) {
 }
 
 void startTimeSynchronization() {
-  long utcOffsetSeconds = gmtOffset_sec;
-  String countryCode = "ID";
-  String continentCode = "AS";
+  // Restore the last known timezone before attempting a fresh lookup.
+  long utcOffsetSeconds = wifiPreferencesReady
+      ? wifiPreferences.getLong("tzOffset", gmtOffset_sec)
+      : gmtOffset_sec;
+  String countryCode = wifiPreferencesReady
+      ? wifiPreferences.getString("tzCountry", "ID")
+      : "ID";
+  String continentCode = wifiPreferencesReady
+      ? wifiPreferences.getString("tzCont", "AS")
+      : "AS";
 
   if (detectNetworkTimeZone(utcOffsetSeconds, countryCode, continentCode)) {
-    Serial.printf("Detected location zone: %s / %s, UTC offset: %ld seconds.\n",
+    if (wifiPreferencesReady) {
+      wifiPreferences.putLong("tzOffset", utcOffsetSeconds);
+      wifiPreferences.putString("tzCountry", countryCode);
+      wifiPreferences.putString("tzCont", continentCode);
+    }
+
+    Serial.printf("Detected location zone: %s / %s, UTC offset: %ld seconds.\\n",
                   countryCode.c_str(), continentCode.c_str(),
                   utcOffsetSeconds);
   } else {
-    Serial.println(F("Location lookup failed; using default UTC+7 settings."));
+    Serial.printf("Location lookup failed; using saved UTC offset: %ld seconds.\\n",
+                  utcOffsetSeconds);
   }
 
   // Keep timezone independent from the NTP server selected below.
