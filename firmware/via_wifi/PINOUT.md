@@ -1,6 +1,6 @@
 # ESP32-C3 SuperMini — Hardware Pinout
 
-Dokumentasi koneksi perangkat keras untuk firmware **Neo Firmware — via Wi-Fi**.
+Hardware connection reference for **Neo Firmware — via Wi-Fi**.
 
 ## Board
 
@@ -10,7 +10,7 @@ Dokumentasi koneksi perangkat keras untuk firmware **Neo Firmware — via Wi-Fi*
 
 ### INMP441 — I2S Microphone
 
-| INMP441 | ESP32-C3 SuperMini | Keterangan |
+| INMP441 | ESP32-C3 SuperMini | Description |
 |---|---:|---|
 | SCK | GPIO 1 | I2S Bit Clock (BCLK) |
 | WS | GPIO 2 | I2S Word Select (WS/LRCLK) |
@@ -18,7 +18,7 @@ Dokumentasi koneksi perangkat keras untuk firmware **Neo Firmware — via Wi-Fi*
 
 ### MAX98357A — I2S Audio Amplifier
 
-| MAX98357A | ESP32-C3 SuperMini | Keterangan |
+| MAX98357A | ESP32-C3 SuperMini | Description |
 |---|---:|---|
 | BCLK | GPIO 1 | I2S Bit Clock |
 | LRC | GPIO 2 | I2S Left/Right Clock |
@@ -26,22 +26,22 @@ Dokumentasi koneksi perangkat keras untuk firmware **Neo Firmware — via Wi-Fi*
 
 ### TTP223 — Touch Inputs
 
-| Fungsi | ESP32-C3 SuperMini | Keterangan |
+| Function | ESP32-C3 SuperMini | Description |
 |---|---:|---|
-| PREV | GPIO 4 | Navigasi sebelumnya |
-| NEXT | GPIO 6 | Navigasi berikutnya |
-| OK / PAUSE / PLAY | GPIO 7 | Tombol konfirmasi dan kontrol |
+| PREV | GPIO 4 | Previous navigation |
+| NEXT | GPIO 6 | Next navigation |
+| OK / PAUSE / PLAY | GPIO 7 | Confirmation and playback control |
 
 ### OLED — I2C Display
 
-| OLED | ESP32-C3 SuperMini | Keterangan |
+| OLED | ESP32-C3 SuperMini | Description |
 |---|---:|---|
 | SCL | GPIO 20 | I2C Clock |
 | SDA | GPIO 21 | I2C Data |
 
 ## Pin Summary
 
-| GPIO | Perangkat | Sinyal |
+| GPIO | Device | Signal |
 |---:|---|---|
 | GPIO 1 | INMP441 + MAX98357A | I2S BCLK / SCK |
 | GPIO 2 | INMP441 + MAX98357A | I2S WS / LRC |
@@ -55,10 +55,10 @@ Dokumentasi koneksi perangkat keras untuk firmware **Neo Firmware — via Wi-Fi*
 
 ## Wiring Notes
 
-- **Shared I2S clock:** INMP441 dan MAX98357A menggunakan jalur clock yang sama: GPIO 1 (BCLK/SCK) dan GPIO 2 (WS/LRC). Hubungkan kedua pin clock perangkat ke GPIO yang sama sesuai tabel.
-- **Separate audio data:** INMP441 mengirim data audio melalui GPIO 10, sedangkan MAX98357A menerima data audio melalui GPIO 5.
-- Pastikan konfigurasi driver I2S firmware mendukung penggunaan mikrofon dan amplifier pada clock bersama sebelum mengaktifkan keduanya secara bersamaan.
-- Pastikan semua perangkat menggunakan **GND bersama**.
-- Periksa kebutuhan tegangan dan level logika masing-masing modul sebelum menyalakan rangkaian.
+- **Shared I2S clock:** The INMP441 and MAX98357A share the same clock lines: GPIO 1 (BCLK/SCK) and GPIO 2 (WS/LRC). Connect both devices' clock pins to the corresponding shared GPIO lines.
+- **Separate audio data:** The INMP441 sends audio data through GPIO 10, while the MAX98357A receives audio data through GPIO 5.
+- Verify that the firmware's I2S driver configuration supports using the microphone and amplifier with shared clock lines before enabling both devices simultaneously.
+- Ensure that all devices share a **common GND**.
+- Check each module's voltage and logic-level requirements before powering the circuit.
 
-> **Catatan:** Dokumen ini mencatat pemetaan pin yang direncanakan. Selalu cocokkan wiring fisik dengan label pin pada modul dan konfigurasi firmware.
+> **Note:** This document records the planned pin mapping. Always verify the physical wiring against the labels on each module and the firmware configuration.
