@@ -22,6 +22,9 @@ Do not resize, recolor, rename, or replace the source PNGs here. Firmware-ready 
 | Progress arc frames | 32 × 32 px |
 | Progress bar frames | 48 × 8 px |
 | Dynamic heart | 16 × 16 px |
+| Digit style A and colon | 25 × 48 px |
+| Digit style B and colon | 25 × 25 px |
+| Digit style C and colon | 25 × 48 px |
 | Bluetooth icon | 16 × 18 px |
 | Static Wi-Fi icon | 16 × 14 px |
 | Sun, moon, alarm, notification, heart icons | 16 × 16 px |
