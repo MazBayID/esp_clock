@@ -14,6 +14,8 @@ on:
     paths:
       - "firmware/mochi_chronos/**"
       - "tools/package_firmware.py"
+      - "tools/configure_gpio.py"
+      - "tests/test_configure_gpio.py"
       - ".github/workflows/build-firmware-mochi-chronos.yml"
   workflow_dispatch:
     inputs:
@@ -90,7 +92,7 @@ jobs:
             --variant mochi_chronos \
             --build-dir firmware/mochi_chronos/.pio/build/esp32-c3-supermini \
             --output-dir dist/mochi_chronos \
-            --git-sha "$GITHUB_SHA" \\
+            --git-sha "$GITHUB_SHA" \
             --build-id "$BUILD_ID"
 
       - name: Upload firmware package
