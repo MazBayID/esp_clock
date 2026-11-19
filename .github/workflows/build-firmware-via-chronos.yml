@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: neo-clock-chronos-build-${{ github.ref }}
-  cancel-in-progress: true
+  group: neo-clock-chronos-build-${{ github.workflow }}-${{ github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   build-esp32-c3:
@@ -53,28 +53,18 @@ jobs:
         run: |
           arduino-cli compile --fqbn esp32:esp32:esp32c3 --warnings all --output-dir build/neo-clock-chronos firmware/via_chronos
 
-      - name: Package firmware binaries
+      - name: Package standardized firmware downloads
         run: |
-          mkdir -p dist
-          cp build/neo-clock-chronos/*.bin dist/
-          cat > dist/FLASH-INSTRUCTIONS.txt <<'EOF'
-          NEO CLOCK - ESP32-C3 SuperMini - Chronos BLE
+          python tools/package_firmware.py \
+            --variant via_chronos \
+            --build-dir build/neo-clock-chronos \
+            --output-dir dist/via_chronos \
+            --git-sha "$GITHUB_SHA"
 
-          Default ESP32-C3 Arduino flash offsets:
-            bootloader  : 0x0000
-            partitions  : 0x8000
-            boot_app0   : 0xE000
-            application : 0x10000
-
-          Select the ESP32-C3 target and the serial port for your board.
-          EOF
-          cd dist
-          zip -9 "../NEO-CLOCK-CHRONOS-ESP32-C3-${GITHUB_SHA::7}.zip" ./*.bin FLASH-INSTRUCTIONS.txt
-
-      - name: Upload firmware artifact
+      - name: Upload firmware package
         uses: actions/upload-artifact@v4
         with:
-          name: NEO-CLOCK-CHRONOS-ESP32-C3-${{ github.sha }}
-          path: NEO-CLOCK-CHRONOS-ESP32-C3-*.zip
+          name: neo-clock-via-chronos-${{ github.sha }}
+          path: dist/via_chronos/*
           if-no-files-found: error
           retention-days: 30
