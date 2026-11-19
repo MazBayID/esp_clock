@@ -23,9 +23,24 @@ uint8_t savedWiFiNetworkCount() {
   return count > MAX_SAVED_WIFI_NETWORKS ? MAX_SAVED_WIFI_NETWORKS : count;
 }
 
+void showWiFiConnectionMessage(const String& title,
+                               const String& network = "") {
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 18);
+  display.print(title);
+  if (network.length() > 0) {
+    display.setCursor(0, 34);
+    display.print(network.substring(0, 20));
+  }
+  display.display();
+}
+
 bool connectToWiFi(const String& networkSsid,
                    const String& networkPassword,
                    uint32_t timeoutMs) {
+  showWiFiConnectionMessage("CONNECTING TO WIFI", networkSsid);
   WiFi.disconnect(false, false);
   delay(150);
   WiFi.begin(networkSsid.c_str(), networkPassword.c_str());
@@ -37,10 +52,13 @@ bool connectToWiFi(const String& networkSsid,
   }
 
   if (WiFi.status() == WL_CONNECTED) {
+    showWiFiConnectionMessage("CONNECTED", networkSsid);
     return true;
   }
 
+  showWiFiConnectionMessage("WIFI FAILED", networkSsid);
   WiFi.disconnect(false, false);
+  delay(700);
   return false;
 }
 
