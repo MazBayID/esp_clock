@@ -269,7 +269,7 @@ String jsonEscape(const String& value) {
       escaped += '\\';
       escaped += character;
     } else if (character == '\n') {
-      escaped += F("\n");
+      escaped += F("\\n");
     } else if (character == '\r') {
       escaped += F("\\r");
     } else if (static_cast<uint8_t>(character) >= 0x20) {
