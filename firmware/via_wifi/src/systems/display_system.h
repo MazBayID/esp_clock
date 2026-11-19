@@ -68,7 +68,6 @@ void setupDisplay() {
 
   display.setRotation(2);
   display.clearDisplay();
-  display.drawBitmap(32, 0, epd_bitmap_neo_clock, 64, 64, SSD1306_WHITE);
   display.display();
 }
 
