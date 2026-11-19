@@ -487,6 +487,8 @@ void setupWiFi() {
 
     if (!visible) {
       Serial.printf("Saved Wi-Fi not found nearby: %s\n", savedSsid.c_str());
+      showWiFiConnectionMessage("WIFI FAILED", savedSsid);
+      delay(700);
       continue;
     }
 
