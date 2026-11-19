@@ -59,6 +59,7 @@ extern int clockFace;
 extern unsigned long signalTimer;
 extern int lastHour;
 extern uint8_t clockStyle;
+extern uint8_t menuSelection;
 
 extern bool lastTalkState;
 extern bool lastNextState;
@@ -73,6 +74,7 @@ String formatDuaDigit(int angka);
 void drawDigit(int x, int y, int number);
 void drawCustomClock(const struct tm& timeinfo, int digitY, int colonY,
                      int secondsX, int secondsY);
+void setupMenuSettings();
 void updateInput();
 void renderDisplay(const struct tm& timeinfo, bool isTimeAvail);
 
