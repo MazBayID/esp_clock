@@ -57,8 +57,6 @@ extern const char* password;
 extern int currentScreen;
 extern int clockFace;
 extern unsigned long signalTimer;
-extern unsigned long quoteTimer;
-extern String currentQuote;
 extern int lastHour;
 extern uint8_t clockStyle;
 
@@ -71,7 +69,6 @@ void setupI2S();
 void setupDisplay();
 void setupWiFi();
 void handleWiFiPortal();
-void fetchQuote();
 String formatDuaDigit(int angka);
 void drawDigit(int x, int y, int number);
 void drawCustomClock(const struct tm& timeinfo, int digitY, int colonY,
