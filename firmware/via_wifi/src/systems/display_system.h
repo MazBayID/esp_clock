@@ -76,7 +76,7 @@ void renderDisplay(const struct tm& timeinfo, bool isTimeAvail) {
     if (isTimeAvail) {
       drawCustomClock(timeinfo, 20, 20, 110, 10);
 
-      if (clockFace != 0) {
+      if (clockFace != 0 && clockStyle != 3 && clockStyle != 5) {
         display.setTextSize(1);
         display.setCursor(2, 55);
 
