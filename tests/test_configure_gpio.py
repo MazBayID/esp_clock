@@ -84,7 +84,7 @@ class ConfigureGpioTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             self.make_repo(root)
-            result = self.run_config(root, "via_wifi", {"button_prev": 2})
+            result = self.run_config(root, "via_wifi", {"button_prev": 2, "speaker_lrc": 3})
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn("strapping pin", result.stdout)
 
