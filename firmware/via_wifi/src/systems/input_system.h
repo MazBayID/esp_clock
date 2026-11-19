@@ -11,6 +11,7 @@ bool modeLongHandled = false;
 unsigned long modePressStarted = 0;
 bool rawModeState = LOW;
 bool stableModeState = LOW;
+bool wifiStatusFromMenu = false;
 unsigned long modeDebounceStarted = 0;
 constexpr unsigned long INPUT_DEBOUNCE_MS = 35;
 constexpr unsigned long MENU_LONG_PRESS_MS = 700;
@@ -27,6 +28,7 @@ void openSelectedMenuItem() {
       break;
     case 1:
       currentScreen = 2; // Wi-Fi status.
+      wifiStatusFromMenu = true;
       signalTimer = millis();
       break;
     case 2:
@@ -72,9 +74,7 @@ void updateInput() {
           currentScreen = 3;
         } else if (currentScreen == 2 || currentScreen == 4) {
           currentScreen = 3;
-        } else if (currentScreen == 1) {
-          currentScreen = 3;
-        }
+
       }
       modePressActive = false;
     }
@@ -120,6 +120,7 @@ void updateInput() {
     if (signalState == HIGH && lastTalkState == LOW) {
       beep(1);
       currentScreen = 2;
+      wifiStatusFromMenu = false;
       signalTimer = millis();
     }
     if (nextState == HIGH && lastNextState == LOW) {
@@ -136,7 +137,7 @@ void updateInput() {
   lastModeState = stableModeState;
 
   if (currentScreen == 2 && millis() - signalTimer > 8000) {
-    currentScreen = 0;
+    currentScreen = wifiStatusFromMenu ? 3 : 0;
   }
 }
 
