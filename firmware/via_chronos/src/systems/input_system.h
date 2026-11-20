@@ -70,6 +70,15 @@ void activateChronosMenuItem() {
       chronosWeatherIndex = 0;
       chronosScreen = CHRONOS_SCREEN_WEATHER;
       break;
+    case 5:
+      chronosScreen = CHRONOS_SCREEN_MUSIC;
+      break;
+    case 6:
+      chronosScreen = CHRONOS_SCREEN_NAVIGATION;
+      break;
+    case 7:
+      chronosScreen = CHRONOS_SCREEN_PHONE_INFO;
+      break;
     default:
       chronosScreen = CHRONOS_SCREEN_CLOCK;
       break;
@@ -112,7 +121,7 @@ void updateInput() {
 
   if (prevPressed) {
     if (chronosScreen == CHRONOS_SCREEN_MENU) {
-      chronosMenuSelection = (chronosMenuSelection + 4) % 5;
+      chronosMenuSelection = (chronosMenuSelection + 7) % 8;
     } else if (chronosScreen == CHRONOS_SCREEN_CLOCK ||
                chronosScreen == CHRONOS_SCREEN_STYLE) {
       changeClockStyle(-1);
@@ -123,6 +132,10 @@ void updateInput() {
     } else if (chronosScreen == CHRONOS_SCREEN_WEATHER) {
       const int count = watch.getWeatherCount();
       if (count > 0) chronosWeatherIndex = (chronosWeatherIndex + count - 1) % count;
+    } else if (chronosScreen == CHRONOS_SCREEN_MUSIC) {
+      watch.musicControl(MUSIC_PREVIOUS);
+    } else if (chronosScreen == CHRONOS_SCREEN_MUSIC) {
+      watch.musicControl(MUSIC_NEXT);
     } else if (chronosScreen == CHRONOS_SCREEN_NOTIFICATIONS) {
       const int count = watch.getNotificationCount();
       if (count > 0) chronosNotificationIndex = (chronosNotificationIndex + count - 1) % count;
@@ -131,7 +144,7 @@ void updateInput() {
 
   if (nextPressed) {
     if (chronosScreen == CHRONOS_SCREEN_MENU) {
-      chronosMenuSelection = (chronosMenuSelection + 1) % 5;
+      chronosMenuSelection = (chronosMenuSelection + 1) % 8;
     } else if (chronosScreen == CHRONOS_SCREEN_CLOCK ||
                chronosScreen == CHRONOS_SCREEN_STYLE) {
       changeClockStyle(1);
@@ -169,6 +182,8 @@ void updateInput() {
       changeTimeFormat();
     } else if (chronosScreen == CHRONOS_SCREEN_MENU) {
       activateChronosMenuItem();
+    } else if (chronosScreen == CHRONOS_SCREEN_MUSIC) {
+      watch.musicControl(MUSIC_TOGGLE);
     } else {
       chronosScreen = CHRONOS_SCREEN_MENU;
     }
