@@ -62,6 +62,14 @@ void activateChronosMenuItem() {
     case 2:
       chronosScreen = CHRONOS_SCREEN_BLE_INFO;
       break;
+    case 3:
+      chronosNotificationIndex = 0;
+      chronosScreen = CHRONOS_SCREEN_NOTIFICATIONS;
+      break;
+    case 4:
+      chronosWeatherIndex = 0;
+      chronosScreen = CHRONOS_SCREEN_WEATHER;
+      break;
     default:
       chronosScreen = CHRONOS_SCREEN_CLOCK;
       break;
@@ -110,9 +118,11 @@ void updateInput() {
       changeClockStyle(-1);
     } else if (chronosScreen == CHRONOS_SCREEN_TIME_FORMAT) {
       changeTimeFormat();
-    } else if (chronosScreen == CHRONOS_SCREEN_BLE_INFO ||
-               chronosScreen == CHRONOS_SCREEN_WEATHER) {
+    } else if (chronosScreen == CHRONOS_SCREEN_BLE_INFO) {
       chronosScreen = CHRONOS_SCREEN_MENU;
+    } else if (chronosScreen == CHRONOS_SCREEN_WEATHER) {
+      const int count = watch.getWeatherCount();
+      if (count > 0) chronosWeatherIndex = (chronosWeatherIndex + count - 1) % count;
     } else if (chronosScreen == CHRONOS_SCREEN_NOTIFICATIONS) {
       const int count = watch.getNotificationCount();
       if (count > 0) chronosNotificationIndex = (chronosNotificationIndex + count - 1) % count;
@@ -127,9 +137,11 @@ void updateInput() {
       changeClockStyle(1);
     } else if (chronosScreen == CHRONOS_SCREEN_TIME_FORMAT) {
       changeTimeFormat();
-    } else if (chronosScreen == CHRONOS_SCREEN_BLE_INFO ||
-               chronosScreen == CHRONOS_SCREEN_WEATHER) {
+    } else if (chronosScreen == CHRONOS_SCREEN_BLE_INFO) {
       chronosScreen = CHRONOS_SCREEN_MENU;
+    } else if (chronosScreen == CHRONOS_SCREEN_WEATHER) {
+      const int count = watch.getWeatherCount();
+      if (count > 0) chronosWeatherIndex = (chronosWeatherIndex + 1) % count;
     } else if (chronosScreen == CHRONOS_SCREEN_NOTIFICATIONS) {
       const int count = watch.getNotificationCount();
       if (count > 0) chronosNotificationIndex = (chronosNotificationIndex + 1) % count;
