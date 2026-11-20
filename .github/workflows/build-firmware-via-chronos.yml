@@ -81,9 +81,33 @@ jobs:
           arduino-cli lib update-index
           arduino-cli lib install "Adafruit GFX Library"
           arduino-cli lib install "Adafruit SSD1306"
-          arduino-cli lib install "ChronosESP32"
+          # Keep the BLE API aligned with the ChronosESP32 v1.9.1 copy vendored by Mochi.
+          arduino-cli lib install "ChronosESP32@1.9.1"
           arduino-cli lib install "ESP32Time"
           arduino-cli lib install "NimBLE-Arduino"
+
+      - name: Verify ChronosESP32 library version
+        run: |
+          arduino-cli lib list
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          roots = [Path.home() / "Arduino" / "libraries", Path.home() / ".arduino15" / "libraries"]
+          matches = []
+          for root in roots:
+              if root.exists():
+                  matches.extend(root.glob("ChronosESP32/library.properties"))
+          if not matches:
+              raise SystemExit("ChronosESP32 library.properties was not found after installation")
+          versions = []
+          for prop in matches:
+              match = re.search(r"^version=(.+)$", prop.read_text(), re.M)
+              if match:
+                  versions.append(match.group(1).strip())
+          if "1.9.1" not in versions:
+              raise SystemExit(f"Expected ChronosESP32 1.9.1, found: {versions}")
+          print("Verified ChronosESP32 1.9.1")
+          PY
 
       - name: Compile NEO CLOCK via Chronos
         run: |
