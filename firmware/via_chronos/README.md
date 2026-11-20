@@ -63,5 +63,5 @@ Still requires physical-device validation:
 - Pairing with Chronos app.
 - Time synchronization and display behavior.
 - Touch sensor polarity and usability.
-- Notification rendering (currently logged to Serial only).
+- Physical notification and weather data delivery from the Chronos app.
 - Audio output and microphone support (not yet enabled).
