@@ -85,6 +85,11 @@ void setupInput() {
   watch.set24Hour(chronos24Hour);
 }
 
+void persistChronosTimeFormat() {
+  chronos24Hour = watch.is24Hour();
+  saveChronosUiSettings();
+}
+
 void updateInput() {
   const unsigned long now = millis();
   const bool prevPressed = updateDebouncedButton(
@@ -131,7 +136,9 @@ void updateInput() {
   if (stableModeState == HIGH && !modeLongHandled &&
       now - modePressStarted >= MODE_LONG_PRESS_MS) {
     modeLongHandled = true;
-    chronosScreen = CHRONOS_SCREEN_CLOCK;
+    chronosScreen = (chronosScreen == CHRONOS_SCREEN_CLOCK)
+        ? CHRONOS_SCREEN_MENU
+        : CHRONOS_SCREEN_CLOCK;
   }
 
   // A short MODE action is processed on release to distinguish it from a hold.
