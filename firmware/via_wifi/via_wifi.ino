@@ -17,10 +17,6 @@ uint8_t menuSelection = 0;
 unsigned long signalTimer = 0;
 int lastHour = -1;
 
-bool lastTalkState = LOW;
-bool lastNextState = LOW;
-bool lastModeState = LOW;
-
 #include "src/systems/display_system.h"
 #include "src/systems/audio_system.h"
 #include "src/systems/wifi_system.h"
@@ -30,10 +26,7 @@ bool lastModeState = LOW;
 void setup() {
   Serial.begin(115200);
 
-  pinMode(PIN_PREV, INPUT);
-  pinMode(PIN_NEXT, INPUT);
-  pinMode(PIN_MODE, INPUT);
-
+  setupInput();
   setupMenuSettings();
   setupI2S();
   setupDisplay();
