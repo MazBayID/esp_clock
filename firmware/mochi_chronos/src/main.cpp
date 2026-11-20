@@ -556,14 +556,11 @@ void loop()
     {
         bool overrideActive = false;
 
-        if (watch.getNavigation().active)
-        {
-            if (ui.current() != SCR_NAVIGATION)
-                ui.goTo(SCR_NAVIGATION);
-
-            overrideActive = true;
-        }
-        else if (
+        // Navigation is shown when a session starts or a new instruction
+        // arrives (CF_NAV_DATA / CF_NAV_ICON callbacks). Do not force it
+        // here on every loop: users must remain free to browse other screens
+        // while turn-by-turn navigation continues in the background.
+        if (
             notificationUntil &&
             millis() < notificationUntil)
         {
