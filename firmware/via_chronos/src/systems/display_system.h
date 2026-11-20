@@ -70,20 +70,24 @@ void setupDisplay() {
 
 void renderChronosMenu() {
   static const char* menuItems[] = {
-    "Clock Style",
-    "Time Format",
-    "BLE Status",
-    "Notifications",
-    "Weather"
+    "Clock Style", "Time Format", "BLE Status", "Notifications",
+    "Weather", "Music Control", "Navigation", "Phone Information"
   };
 
+  const uint8_t firstVisible = chronosMenuSelection >= 5
+      ? chronosMenuSelection - 4 : 0;
   display.setTextSize(1);
   display.setCursor(0, 0);
   display.print(F("NEO CLOCK MENU"));
+  display.setCursor(105, 0);
+  display.print(chronosMenuSelection + 1);
+  display.print(F("/8"));
   display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
 
-  for (uint8_t i = 0; i < 5; ++i) {
-    const int y = 14 + i * 9;
+  for (uint8_t row = 0; row < 5; ++row) {
+    const uint8_t i = firstVisible + row;
+    if (i >= 8) break;
+    const int y = 14 + row * 9;
     if (chronosMenuSelection == i) {
       display.fillRect(0, y - 1, SCREEN_WIDTH, 11, SSD1306_WHITE);
       display.setTextColor(SSD1306_BLACK);
@@ -97,7 +101,6 @@ void renderChronosMenu() {
       display.print(menuItems[i]);
     }
   }
-
 }
 
 void renderClockStyleScreen() {
@@ -238,6 +241,66 @@ void renderWeather() {
   display.print(count);
 }
 
+void renderMusicScreen() {
+  const MusicInfo music = watch.getMusicInfo();
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print(F("MUSIC CONTROL"));
+  display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
+  display.setCursor(0, 16);
+  display.print(music.state ? F("PLAYING") : F("PAUSED"));
+  display.setCursor(0, 29);
+  display.print(music.title.substring(0, 21));
+  display.setCursor(0, 41);
+  display.print(music.artist.substring(0, 21));
+  display.setCursor(0, 55);
+  display.print(F("PREV/NEXT: TRACK  OK:PLAY"));
+}
+
+void renderNavigationScreen() {
+  const Navigation nav = watch.getNavigation();
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print(F("NAVIGATION"));
+  display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
+  if (!nav.active) {
+    display.setCursor(0, 28);
+    display.print(F("No active navigation"));
+    display.setCursor(0, 43);
+    display.print(F("Open navigation app"));
+    return;
+  }
+  String direction = nav.directions.length() ? nav.directions : nav.title;
+  direction.trim();
+  display.setCursor(0, 15);
+  display.print(nav.title.substring(0, 21));
+  display.setCursor(0, 27);
+  display.print(direction.substring(0, 21));
+  display.setCursor(0, 41);
+  display.print(nav.distance.substring(0, 21));
+  display.setCursor(0, 53);
+  display.print(nav.duration.substring(0, 21));
+}
+
+void renderPhoneInfoScreen() {
+  const PhoneInfo phone = watch.getPhoneInfo();
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print(F("PHONE INFORMATION"));
+  display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
+  display.setCursor(0, 16);
+  display.print(F("BLE: "));
+  display.print(chronosConnected ? F("CONNECTED") : F("WAITING"));
+  display.setCursor(0, 28);
+  display.print(F("BATTERY: "));
+  display.print(phone.batteryLevel);
+  display.print('%');
+  display.setCursor(0, 40);
+  display.print(phone.isCharging ? F("CHARGING") : F("ON BATTERY"));
+  display.setCursor(0, 52);
+  String model = phone.manufacturer + " " + phone.model;
+  display.print(model.substring(0, 21));
+}
 void renderClockFace() {
   if (!chronosTimeSynced) {
     display.setTextSize(1);
@@ -314,6 +377,15 @@ void renderDisplay() {
       break;
     case CHRONOS_SCREEN_WEATHER:
       renderWeather();
+      break;
+    case CHRONOS_SCREEN_MUSIC:
+      renderMusicScreen();
+      break;
+    case CHRONOS_SCREEN_NAVIGATION:
+      renderNavigationScreen();
+      break;
+    case CHRONOS_SCREEN_PHONE_INFO:
+      renderPhoneInfoScreen();
       break;
     case CHRONOS_SCREEN_CLOCK:
     default:
