@@ -13,6 +13,8 @@ volatile bool chronosTimeChanged = false;
 uint8_t clockStyle = 0;
 uint8_t chronosScreen = CHRONOS_SCREEN_CLOCK;
 uint8_t chronosMenuSelection = 0;
+int chronosNotificationIndex = 0;
+int chronosWeatherIndex = 0;
 bool chronos24Hour = true;
 unsigned long lastDisplayUpdate = 0;
 
