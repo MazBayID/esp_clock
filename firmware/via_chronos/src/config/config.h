@@ -42,7 +42,9 @@ enum ChronosUiScreen : uint8_t {
   CHRONOS_SCREEN_MENU,
   CHRONOS_SCREEN_STYLE,
   CHRONOS_SCREEN_TIME_FORMAT,
-  CHRONOS_SCREEN_BLE_INFO
+  CHRONOS_SCREEN_BLE_INFO,
+  CHRONOS_SCREEN_NOTIFICATIONS,
+  CHRONOS_SCREEN_WEATHER
 };
 
 extern Adafruit_SSD1306 display;
@@ -50,6 +52,8 @@ extern ChronosESP32 watch;
 extern uint8_t clockStyle;
 extern uint8_t chronosScreen;
 extern uint8_t chronosMenuSelection;
+extern int chronosNotificationIndex;
+extern int chronosWeatherIndex;
 extern bool chronos24Hour;
 
 extern volatile bool chronosConnected;
