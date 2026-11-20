@@ -68,10 +68,96 @@ void setupDisplay() {
   display.display();
 }
 
-void renderDisplay() {
-  display.clearDisplay();
-  display.setTextColor(SSD1306_WHITE);
+void renderChronosMenu() {
+  static const char* menuItems[] = {
+    "Clock Style",
+    "Time Format",
+    "BLE Status"
+  };
 
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print(F("NEO CLOCK MENU"));
+  display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
+
+  for (uint8_t i = 0; i < 3; ++i) {
+    const int y = 16 + i * 13;
+    if (chronosMenuSelection == i) {
+      display.fillRect(0, y - 1, SCREEN_WIDTH, 11, SSD1306_WHITE);
+      display.setTextColor(SSD1306_BLACK);
+      display.setCursor(5, y);
+      display.print('>');
+      display.setCursor(17, y);
+      display.print(menuItems[i]);
+      display.setTextColor(SSD1306_WHITE);
+    } else {
+      display.setCursor(17, y);
+      display.print(menuItems[i]);
+    }
+  }
+
+  display.setCursor(0, 56);
+  display.print(F("PREV/NEXT  OK:OPEN"));
+}
+
+void renderClockStyleScreen() {
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print(F("CLOCK STYLE"));
+  display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
+
+  display.setTextSize(2);
+  display.setCursor(24, 23);
+  display.print(F("STYLE "));
+  display.print(clockStyle + 1);
+
+  display.setTextSize(1);
+  display.setCursor(0, 51);
+  display.print(F("PREV/NEXT: CHANGE"));
+  display.setCursor(0, 57);
+  display.print(F("OK: MENU  HOLD: HOME"));
+}
+
+void renderTimeFormatScreen() {
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print(F("TIME FORMAT"));
+  display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
+
+  display.setTextSize(2);
+  display.setCursor(27, 24);
+  display.print(chronos24Hour ? F("24 HOUR") : F("12 HOUR"));
+
+  display.setTextSize(1);
+  display.setCursor(0, 51);
+  display.print(F("PREV/NEXT: CHANGE"));
+  display.setCursor(0, 57);
+  display.print(F("OK: MENU  HOLD: HOME"));
+}
+
+void renderBleInfoScreen() {
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print(F("CHRONOS BLE STATUS"));
+  display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
+
+  display.setCursor(0, 19);
+  display.print(F("LINK: "));
+  display.print(chronosConnected ? F("CONNECTED") : F("WAITING"));
+
+  display.setCursor(0, 32);
+  display.print(F("TIME: "));
+  display.print(chronosTimeSynced ? F("SYNCED") : F("NOT SYNCED"));
+
+  display.setCursor(0, 45);
+  display.print(F("FORMAT: "));
+  display.print(chronos24Hour ? F("24-HOUR") : F("12-HOUR"));
+
+  display.setCursor(0, 57);
+  display.print(F("OK: MENU  HOLD: HOME"));
+}
+
+void renderClockFace() {
   if (!chronosTimeSynced) {
     display.setTextSize(1);
     display.setCursor(0, 0);
@@ -83,7 +169,6 @@ void renderDisplay() {
     display.print(chronosConnected ? F("WAITING FOR TIME") : F("PAIR WITH CHRONOS"));
     display.setCursor(22, 39);
     display.print(chronosConnected ? F("SYNC IN PROGRESS") : F("WATCHES > PAIR NEW"));
-    display.display();
     return;
   }
 
@@ -103,6 +188,8 @@ void renderDisplay() {
     display.setTextSize(1);
     display.setCursor(0, 55);
     display.print(watch.getTime("%d/%m/%Y"));
+    display.setCursor(75, 55);
+    display.print(chronos24Hour ? F("24H") : F("12H"));
     display.setCursor(105, 55);
     display.print(chronosConnected ? F("BT") : F("--"));
   } else {
@@ -119,6 +206,32 @@ void renderDisplay() {
     display.setTextSize(1);
     display.setCursor(0, 0);
     display.print(chronosConnected ? F("BLE") : F("OFF"));
+    display.setCursor(101, 0);
+    display.print(chronos24Hour ? F("24H") : F("12H"));
+  }
+}
+
+void renderDisplay() {
+  display.clearDisplay();
+  display.setTextColor(SSD1306_WHITE);
+
+  switch (chronosScreen) {
+    case CHRONOS_SCREEN_MENU:
+      renderChronosMenu();
+      break;
+    case CHRONOS_SCREEN_STYLE:
+      renderClockStyleScreen();
+      break;
+    case CHRONOS_SCREEN_TIME_FORMAT:
+      renderTimeFormatScreen();
+      break;
+    case CHRONOS_SCREEN_BLE_INFO:
+      renderBleInfoScreen();
+      break;
+    case CHRONOS_SCREEN_CLOCK:
+    default:
+      renderClockFace();
+      break;
   }
 
   display.display();
