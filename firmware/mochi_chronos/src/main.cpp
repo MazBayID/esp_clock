@@ -449,29 +449,30 @@ void loop()
     {
         if (menu.isShowingDetail())
         {
-            if (okEv == BTN_SHORT_PRESS ||
-                minusEv == BTN_SHORT_PRESS)
-            {
+            // MODE confirms/closes the detail panel; PREV is a secondary back action.
+            if (okEv == BTN_SHORT_PRESS || minusEv == BTN_SHORT_PRESS)
                 menu.closeDetail();
-            }
         }
         else
         {
-            if (plusEv == BTN_SHORT_PRESS)
-                menu.moveNext();
-
+            // PREV/NEXT navigate; MODE short press selects.
             if (minusEv == BTN_SHORT_PRESS)
                 menu.movePrev();
+
+            if (plusEv == BTN_SHORT_PRESS)
+                menu.moveNext();
 
             if (okEv == BTN_SHORT_PRESS)
                 menu.activate();
 
-            if (minusEv == BTN_LONG_PRESS)
+            // Match via_wifi: holding MODE exits the menu to the main face.
+            if (okEv == BTN_LONG_PRESS)
                 ui.backToFace();
         }
     }
     else
     {
+        // MODE short press retains the current quick-access action.
         if (okEv == BTN_SHORT_PRESS)
         {
             if (inQr)
@@ -481,39 +482,19 @@ void loop()
             else if (oledReady)
                 ui.goTo(SCR_PHONE);
         }
+        // Match via_wifi: holding MODE opens the settings menu from any screen.
         else if (okEv == BTN_LONG_PRESS)
-        {
-            watch.findPhone(true);
-            findingPhoneUntil =
-                millis() + FINDING_PHONE_DISPLAY_MS;
-
-            if (oledReady)
-                ui.goTo(SCR_FINDING);
-
-            buzzer.playFindPhone();
-        }
-
-        if (plusEv == BTN_SHORT_PRESS)
-        {
-            if (oledReady)
-                ui.nextScreen();
-        }
-        else if (plusEv == BTN_LONG_PRESS)
         {
             if (oledReady)
                 ui.openMenu();
         }
 
-        if (minusEv == BTN_SHORT_PRESS)
-        {
-            if (oledReady)
-                ui.prevScreen();
-        }
-        else if (minusEv == BTN_LONG_PRESS)
-        {
-            if (oledReady)
-                ui.goTo(SCR_TIME);
-        }
+        // PREV/NEXT short presses navigate between screens.
+        if (plusEv == BTN_SHORT_PRESS && oledReady)
+            ui.nextScreen();
+
+        if (minusEv == BTN_SHORT_PRESS && oledReady)
+            ui.prevScreen();
     }
 
     // ---------- Alarm ----------

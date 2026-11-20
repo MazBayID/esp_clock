@@ -60,8 +60,8 @@
 #define BTN_PLUS_PIN 6
 #define BTN_MINUS_PIN 4
 
-#define BTN_DEBOUNCE_MS 40
-#define BTN_LONGPRESS_MS 600
+#define BTN_DEBOUNCE_MS 35
+#define BTN_LONGPRESS_MS 700
 
 // ---------- Speaker beep (through the existing MAX98357A amp, via I2S) ----------
 // Default sound output: reuses the speaker/amp you already have wired
