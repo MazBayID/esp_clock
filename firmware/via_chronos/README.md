@@ -55,7 +55,7 @@ Implemented in firmware:
 - Chronos time synchronization callback.
 - Six clock styles and generated Bluetooth UI asset.
 - Debounced PREV/NEXT/MODE input handling with short/long MODE actions.
-- On-device settings menu for clock style, time format, and BLE status.
+- On-device settings menu for clock style, time format, BLE status, notifications, and weather.
 - Persistent clock style and 12/24-hour settings.
 
 Still requires physical-device validation:
