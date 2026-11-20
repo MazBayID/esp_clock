@@ -57,6 +57,7 @@ void MenuEngine::enter()
     _selected = 0;
     _statusMsg = "";
     _showingDetail = false;
+    _findPhoneRequested = false;
 }
 
 void MenuEngine::moveNext()
@@ -141,6 +142,19 @@ void MenuEngine::activate()
         setStatus("Reset");
         break;
 
+    case MENU_FIND_PHONE:
+        if (_watch && _watch->isConnected())
+        {
+            _watch->findPhone(true);
+            _findPhoneRequested = true;
+            setStatus("Calling...");
+        }
+        else
+        {
+            setStatus("Phone offline");
+        }
+        break;
+
     case MENU_DEVICE_INFO:
         _showingDetail = true;
         break;
@@ -218,6 +232,7 @@ void MenuEngine::draw()
         "Idle time",
         "Mood freq",
         "Reset BLE",
+        "Find phone",
         "Device info"};
 
     const int valueX = 92;
@@ -284,6 +299,7 @@ void MenuEngine::draw()
                 break;
             }
             case MENU_RESET_PAIRING:
+            case MENU_FIND_PHONE:
             case MENU_DEVICE_INFO:
                 _display->print("OK");
                 break;
