@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <Preferences.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <ChronosESP32.h>
@@ -32,10 +33,24 @@
 #define PIN_MODE 7
 
 #define DISPLAY_REFRESH_MS 100
+#define INPUT_DEBOUNCE_MS 35
+#define MODE_LONG_PRESS_MS 700
+
+// Screen IDs used by the compact settings/navigation UI.
+enum ChronosScreen : uint8_t {
+  CHRONOS_SCREEN_CLOCK = 0,
+  CHRONOS_SCREEN_MENU,
+  CHRONOS_SCREEN_STYLE,
+  CHRONOS_SCREEN_TIME_FORMAT,
+  CHRONOS_SCREEN_BLE_INFO
+};
 
 extern Adafruit_SSD1306 display;
 extern ChronosESP32 watch;
 extern uint8_t clockStyle;
+extern uint8_t chronosScreen;
+extern uint8_t chronosMenuSelection;
+extern bool chronos24Hour;
 
 extern volatile bool chronosConnected;
 extern volatile bool chronosTimeSynced;
