@@ -51,7 +51,7 @@ public:
     // which one to show (cycled with OK while the QR screen is open)
     void setQrCount(int count)
     {
-        _qrCount = count < 0 ? 0 : (count > 9 ? 9 : count);
+        _qrCount = count < 0 ? 0 : (count > CS_QR_SIZE ? CS_QR_SIZE : count);
 
         // Keep the selected link valid if a new QR batch is smaller.
         if (_qrCount == 0)
