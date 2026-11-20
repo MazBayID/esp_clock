@@ -8,6 +8,11 @@ void TouchButton::begin(uint8_t pin)
     _lastRaw = digitalRead(_pin) == HIGH;
     _stableState = _lastRaw;
     _lastChangeMs = millis();
+
+    // Ignore a button already held during boot. It must be released and
+    // pressed again before it can generate a short- or long-press event.
+    _pressStartMs = _lastChangeMs;
+    _longFired = _stableState;
 }
 
 ButtonEvent TouchButton::update()
