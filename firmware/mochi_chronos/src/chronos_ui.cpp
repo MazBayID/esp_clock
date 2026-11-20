@@ -337,7 +337,7 @@ void ChronosUI::drawPhone()
     _display->setCursor(0, 38);
     _display->print(_watch->isPhoneCharging() ? "Charging" : "On battery");
     _display->setCursor(0, 52);
-    _display->print("Hold OK: find phone");
+    _display->print("Hold OK: open menu");
 }
 
 void ChronosUI::drawContacts()
