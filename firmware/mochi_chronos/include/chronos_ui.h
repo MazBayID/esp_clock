@@ -16,8 +16,8 @@ enum UiScreen
     SCR_PHONE,
     SCR_CONTACTS,
     SCR_QR,
-    SCR_FINDING, // not part of the PLUS/MINUS cycle - only entered from OK long-press
-    SCR_MENU,    // not part of the cycle - only entered via PLUS long-press
+    SCR_FINDING, // not part of the PLUS/MINUS cycle - entered by Find Phone
+    SCR_MENU,    // not part of the cycle - opened by MODE long-press
     SCR_COUNT    // keep last
 };
 
@@ -30,7 +30,7 @@ public:
     void prevScreen();       // MINUS short press - cycles backward
     void backToFace();       // jump back to the face/idle screen
     void goTo(UiScreen s);   // jump directly to a screen (e.g. OK -> SCR_PHONE)
-    void openMenu();         // PLUS long press - opens the settings menu
+    void openMenu();         // MODE long press - opens the settings menu
     UiScreen current() const { return _screen; }
 
     // draws the current screen (except SCR_FACE, which main.cpp's sprite/
