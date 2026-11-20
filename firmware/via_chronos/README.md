@@ -40,11 +40,17 @@ Pair through the Chronos app:
 - The Chronos workflow runs `tools/process_assets.py` with a separate output path, so generated assets are placed under `via_chronos` and do not overwrite the Wi-Fi firmware assets.
 - `assets_master/` source PNGs remain unchanged.
 
-## Initial controls
+## Controls and screens
 
-- PREV (GPIO4): previous clock style.
-- NEXT (GPIO6): next clock style.
-- MODE (GPIO7): toggle 12/24-hour display.
+- Clock face: PREV/NEXT cycle the six clock styles; MODE short press toggles 12/24-hour format.
+- Hold MODE for 700 ms to open the menu; hold MODE again from another screen to return to the clock face.
+- Menu: PREV/NEXT move through eight screens; MODE short press opens the selected screen. The menu scrolls to keep the selection visible.
+- Clock Style and Time Format: PREV/NEXT change the selected setting; MODE short press returns to the menu.
+- BLE Status: shows connection and time-sync state.
+- Notifications and Weather: PREV/NEXT browse available entries; MODE short press returns to the menu.
+- Music Control: PREV/NEXT skip tracks; MODE short press toggles play/pause.
+- Navigation and Phone Information: show the latest data supplied by the Chronos app; MODE short press returns to the menu.
+- Clock style and time format are stored in NVS and restored at boot.
 
 ## Milestone status
 
