@@ -91,6 +91,19 @@ void setupInput() {
   pinMode(PIN_NEXT, INPUT);
   pinMode(PIN_MODE, INPUT);
 
+  // Ignore any buttons already held during boot. Each input starts from
+  // its sampled hardware state, so a held button must be released and
+  // pressed again before it can trigger an action.
+  const unsigned long now = millis();
+  rawPrevState = stablePrevState = digitalRead(PIN_PREV) == HIGH;
+  rawNextState = stableNextState = digitalRead(PIN_NEXT) == HIGH;
+  rawModeState = stableModeState = digitalRead(PIN_MODE) == HIGH;
+  prevDebounceStarted = now;
+  nextDebounceStarted = now;
+  modeDebounceStarted = now;
+  modePressStarted = now;
+  modeLongHandled = stableModeState;
+
   chronosUiPreferencesReady = chronosUiPreferences.begin("neo-ble-ui", false);
   if (chronosUiPreferencesReady) {
     const uint8_t savedStyle = chronosUiPreferences.getUChar("clockStyle", clockStyle);
