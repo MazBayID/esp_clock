@@ -134,8 +134,6 @@ void updateInput() {
       if (count > 0) chronosWeatherIndex = (chronosWeatherIndex + count - 1) % count;
     } else if (chronosScreen == CHRONOS_SCREEN_MUSIC) {
       watch.musicControl(MUSIC_PREVIOUS);
-    } else if (chronosScreen == CHRONOS_SCREEN_MUSIC) {
-      watch.musicControl(MUSIC_NEXT);
     } else if (chronosScreen == CHRONOS_SCREEN_NOTIFICATIONS) {
       const int count = watch.getNotificationCount();
       if (count > 0) chronosNotificationIndex = (chronosNotificationIndex + count - 1) % count;
@@ -155,6 +153,8 @@ void updateInput() {
     } else if (chronosScreen == CHRONOS_SCREEN_WEATHER) {
       const int count = watch.getWeatherCount();
       if (count > 0) chronosWeatherIndex = (chronosWeatherIndex + 1) % count;
+    } else if (chronosScreen == CHRONOS_SCREEN_MUSIC) {
+      watch.musicControl(MUSIC_NEXT);
     } else if (chronosScreen == CHRONOS_SCREEN_NOTIFICATIONS) {
       const int count = watch.getNotificationCount();
       if (count > 0) chronosNotificationIndex = (chronosNotificationIndex + 1) % count;
