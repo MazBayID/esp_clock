@@ -72,7 +72,9 @@ void renderChronosMenu() {
   static const char* menuItems[] = {
     "Clock Style",
     "Time Format",
-    "BLE Status"
+    "BLE Status",
+    "Notifications",
+    "Weather"
   };
 
   display.setTextSize(1);
@@ -80,7 +82,7 @@ void renderChronosMenu() {
   display.print(F("NEO CLOCK MENU"));
   display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
 
-  for (uint8_t i = 0; i < 3; ++i) {
+  for (uint8_t i = 0; i < 5; ++i) {
     const int y = 16 + i * 13;
     if (chronosMenuSelection == i) {
       display.fillRect(0, y - 1, SCREEN_WIDTH, 11, SSD1306_WHITE);
@@ -157,6 +159,87 @@ void renderBleInfoScreen() {
   display.print(F("OK: MENU  HOLD: HOME"));
 }
 
+void renderNotifications() {
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print(F("NOTIFICATIONS"));
+  display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
+
+  const int count = watch.getNotificationCount();
+  if (count <= 0) {
+    display.setCursor(0, 27);
+    display.print(F("No notifications"));
+    display.setCursor(0, 43);
+    display.print(F("Check Chronos app"));
+    return;
+  }
+
+  if (chronosNotificationIndex >= count) chronosNotificationIndex = count - 1;
+  Notification note = watch.getNotificationAt(chronosNotificationIndex);
+  display.setCursor(0, 14);
+  display.print(note.app.substring(0, 15));
+  display.setCursor(96, 14);
+  display.print(chronosNotificationIndex + 1);
+  display.print('/');
+  display.print(count);
+
+  String content = note.message.length() ? note.message : note.title;
+  content.trim();
+  int pos = 0;
+  for (int row = 0; row < 4 && pos < content.length(); ++row) {
+    int end = min(pos + 21, (int)content.length());
+    if (end < content.length()) {
+      int space = content.lastIndexOf(' ', end - 1);
+      if (space > pos + 7) end = space;
+    }
+    String line = content.substring(pos, end);
+    line.trim();
+    if (row == 3 && end < content.length()) {
+      if (line.length() > 18) line = line.substring(0, 18);
+      line += "...";
+    }
+    display.setCursor(0, 25 + row * 9);
+    display.print(line);
+    pos = end;
+    while (pos < content.length() && content[pos] == ' ') ++pos;
+  }
+}
+
+void renderWeather() {
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.print(F("WEATHER"));
+  display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
+
+  const int count = watch.getWeatherCount();
+  if (count <= 0) {
+    display.setCursor(0, 27);
+    display.print(F("No weather data"));
+    display.setCursor(0, 43);
+    display.print(F("Check Chronos app"));
+    return;
+  }
+
+  if (chronosWeatherIndex >= count) chronosWeatherIndex = count - 1;
+  Weather weather = watch.getWeatherAt(chronosWeatherIndex);
+  display.setCursor(0, 14);
+  display.print(watch.getWeatherCity().substring(0, 20));
+  display.setTextSize(2);
+  display.setCursor(0, 27);
+  display.print(weather.temp);
+  display.print(F("C"));
+  display.setTextSize(1);
+  display.setCursor(0, 51);
+  display.print(F("H:"));
+  display.print(weather.high);
+  display.print(F(" L:"));
+  display.print(weather.low);
+  display.setCursor(84, 51);
+  display.print(chronosWeatherIndex + 1);
+  display.print('/');
+  display.print(count);
+}
+
 void renderClockFace() {
   if (!chronosTimeSynced) {
     display.setTextSize(1);
@@ -227,6 +310,12 @@ void renderDisplay() {
       break;
     case CHRONOS_SCREEN_BLE_INFO:
       renderBleInfoScreen();
+      break;
+    case CHRONOS_SCREEN_NOTIFICATIONS:
+      renderNotifications();
+      break;
+    case CHRONOS_SCREEN_WEATHER:
+      renderWeather();
       break;
     case CHRONOS_SCREEN_CLOCK:
     default:
