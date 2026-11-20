@@ -104,27 +104,35 @@ void updateInput() {
 
   if (prevPressed) {
     if (chronosScreen == CHRONOS_SCREEN_MENU) {
-      chronosMenuSelection = (chronosMenuSelection + 2) % 3;
+      chronosMenuSelection = (chronosMenuSelection + 4) % 5;
     } else if (chronosScreen == CHRONOS_SCREEN_CLOCK ||
                chronosScreen == CHRONOS_SCREEN_STYLE) {
       changeClockStyle(-1);
     } else if (chronosScreen == CHRONOS_SCREEN_TIME_FORMAT) {
       changeTimeFormat();
-    } else if (chronosScreen == CHRONOS_SCREEN_BLE_INFO) {
+    } else if (chronosScreen == CHRONOS_SCREEN_BLE_INFO ||
+               chronosScreen == CHRONOS_SCREEN_WEATHER) {
       chronosScreen = CHRONOS_SCREEN_MENU;
+    } else if (chronosScreen == CHRONOS_SCREEN_NOTIFICATIONS) {
+      const int count = watch.getNotificationCount();
+      if (count > 0) chronosNotificationIndex = (chronosNotificationIndex + count - 1) % count;
     }
   }
 
   if (nextPressed) {
     if (chronosScreen == CHRONOS_SCREEN_MENU) {
-      chronosMenuSelection = (chronosMenuSelection + 1) % 3;
+      chronosMenuSelection = (chronosMenuSelection + 1) % 5;
     } else if (chronosScreen == CHRONOS_SCREEN_CLOCK ||
                chronosScreen == CHRONOS_SCREEN_STYLE) {
       changeClockStyle(1);
     } else if (chronosScreen == CHRONOS_SCREEN_TIME_FORMAT) {
       changeTimeFormat();
-    } else if (chronosScreen == CHRONOS_SCREEN_BLE_INFO) {
+    } else if (chronosScreen == CHRONOS_SCREEN_BLE_INFO ||
+               chronosScreen == CHRONOS_SCREEN_WEATHER) {
       chronosScreen = CHRONOS_SCREEN_MENU;
+    } else if (chronosScreen == CHRONOS_SCREEN_NOTIFICATIONS) {
+      const int count = watch.getNotificationCount();
+      if (count > 0) chronosNotificationIndex = (chronosNotificationIndex + 1) % count;
     }
   }
 
