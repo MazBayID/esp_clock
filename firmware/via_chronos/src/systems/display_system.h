@@ -253,8 +253,10 @@ void renderMusicScreen() {
   display.print(music.title.substring(0, 21));
   display.setCursor(0, 41);
   display.print(music.artist.substring(0, 21));
-  display.setCursor(0, 55);
-  display.print(F("PREV/NEXT: TRACK  OK:PLAY"));
+  display.setCursor(0, 48);
+  display.print(F("PREV/NEXT: TRACK"));
+  display.setCursor(0, 56);
+  display.print(F("OK: PLAY/PAUSE"));
 }
 
 void renderNavigationScreen() {
