@@ -3,6 +3,12 @@
 
 #include "../config/config.h"
 
+namespace {
+constexpr unsigned long CHRONOS_NOTIFICATION_POPUP_MS = 6000UL;
+unsigned long chronosNotificationPopupUntil = 0;
+bool chronosNotificationPopupActive = false;
+}
+
 void onChronosConnection(bool connected) {
   chronosConnected = connected;
   Serial.println(connected ? F("Chronos: connected") : F("Chronos: disconnected"));
@@ -17,6 +23,8 @@ void onChronosConfiguration(Config config, uint32_t value1, uint32_t value2) {
     chronosTimeChanged = true;
     Serial.print(F("Chronos time synced: "));
     Serial.println(watch.getTimeDate());
+  } else if (config == CF_HR24) {
+    persistChronosTimeFormat();
   }
 }
 
@@ -25,6 +33,35 @@ void onChronosNotification(Notification notification) {
   Serial.print(notification.app);
   Serial.print(F(": "));
   Serial.println(notification.title);
+
+  // ChronosESP32 stores the incoming notification before invoking this
+  // callback; index 0 is therefore the newest notification.
+  chronosNotificationIndex = 0;
+
+  // Pop up only over the clock face. Do not interrupt settings or another
+  // screen the user is actively viewing. A second notification refreshes
+  // the timeout while the popup is still visible.
+  if (chronosScreen == CHRONOS_SCREEN_CLOCK ||
+      (chronosNotificationPopupActive &&
+       chronosScreen == CHRONOS_SCREEN_NOTIFICATIONS)) {
+    chronosScreen = CHRONOS_SCREEN_NOTIFICATIONS;
+    chronosNotificationPopupActive = true;
+    chronosNotificationPopupUntil = millis() + CHRONOS_NOTIFICATION_POPUP_MS;
+  }
+}
+
+void updateChronosNotificationPopup() {
+  if (!chronosNotificationPopupActive ||
+      static_cast<int32_t>(millis() - chronosNotificationPopupUntil) < 0) {
+    return;
+  }
+
+  // Return automatically only if the notification screen is still active.
+  // If the user navigated elsewhere during the popup, preserve that choice.
+  if (chronosScreen == CHRONOS_SCREEN_NOTIFICATIONS) {
+    chronosScreen = CHRONOS_SCREEN_CLOCK;
+  }
+  chronosNotificationPopupActive = false;
 }
 
 void setupChronos() {
@@ -33,7 +70,7 @@ void setupChronos() {
   watch.setNotificationCallback(onChronosNotification);
   watch.setConfigurationCallback(onChronosConfiguration);
 
-  watch.set24Hour(true);
+  watch.set24Hour(chronos24Hour);
   watch.begin();
 
   Serial.print(F("NEO CLOCK BLE address: "));

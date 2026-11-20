@@ -40,11 +40,18 @@ Pair through the Chronos app:
 - The Chronos workflow runs `tools/process_assets.py` with a separate output path, so generated assets are placed under `via_chronos` and do not overwrite the Wi-Fi firmware assets.
 - `assets_master/` source PNGs remain unchanged.
 
-## Initial controls
+## Controls and screens
 
-- PREV (GPIO4): previous clock style.
-- NEXT (GPIO6): next clock style.
-- MODE (GPIO7): toggle 12/24-hour display.
+- Clock face: PREV/NEXT cycle the six clock styles; MODE short press toggles 12/24-hour format.
+- Hold MODE for 700 ms to open the menu; hold MODE again from another screen to return to the clock face.
+- Menu: PREV/NEXT move through eight screens; MODE short press opens the selected screen. The menu scrolls to keep the selection visible.
+- Clock Style and Time Format: PREV/NEXT change the selected setting; MODE short press returns to the menu.
+- BLE Status: shows connection and time-sync state.
+- Notifications: a newly received notification automatically opens the notification screen for six seconds when the clock face is active. PREV/NEXT browse available entries; MODE short press returns to the menu. If the user navigates away during the popup, the firmware preserves that choice.
+- Weather: PREV/NEXT browse available entries; MODE short press returns to the menu.
+- Music Control: PREV/NEXT skip tracks; MODE short press toggles play/pause.
+- Navigation and Phone Information: show the latest data supplied by the Chronos app; MODE short press returns to the menu.
+- Clock style and time format are stored in NVS and restored at boot.
 
 ## Milestone status
 
@@ -54,12 +61,16 @@ Implemented in firmware:
 - Chronos BLE advertising and connection callback.
 - Chronos time synchronization callback.
 - Six clock styles and generated Bluetooth UI asset.
-- Basic touch controls.
+- Debounced PREV/NEXT/MODE input handling with short/long MODE actions.
+- On-device settings menu for clock style, time format, BLE status, notifications, weather, music control, navigation, and phone information.
+- Automatic notification popup while the clock face is active.
+- Persistent clock style and 12/24-hour settings.
 
 Still requires physical-device validation:
 
 - Pairing with Chronos app.
 - Time synchronization and display behavior.
 - Touch sensor polarity and usability.
-- Notification rendering (currently logged to Serial only).
+- Notification popup timing, dismissal, and behavior while other screens are open.
+- Physical notification, weather, music, navigation, and phone data delivery from the Chronos app.
 - Audio output and microphone support (not yet enabled).

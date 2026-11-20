@@ -11,6 +11,11 @@ volatile bool chronosTimeSynced = false;
 volatile bool chronosTimeChanged = false;
 
 uint8_t clockStyle = 0;
+uint8_t chronosScreen = CHRONOS_SCREEN_CLOCK;
+uint8_t chronosMenuSelection = 0;
+int chronosNotificationIndex = 0;
+int chronosWeatherIndex = 0;
+bool chronos24Hour = true;
 unsigned long lastDisplayUpdate = 0;
 
 void setup() {
@@ -31,6 +36,7 @@ void setup() {
 void loop() {
   updateChronos();
   updateInput();
+  updateChronosNotificationPopup();
 
   const unsigned long now = millis();
   if (now - lastDisplayUpdate >= DISPLAY_REFRESH_MS) {
