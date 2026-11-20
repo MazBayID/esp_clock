@@ -49,7 +49,16 @@ public:
 
     // let main.cpp tell the QR screen how many links Chronos has sent, and
     // which one to show (cycled with OK while the QR screen is open)
-    void setQrCount(int count) { _qrCount = count; }
+    void setQrCount(int count)
+    {
+        _qrCount = count < 0 ? 0 : (count > 9 ? 9 : count);
+
+        // Keep the selected link valid if a new QR batch is smaller.
+        if (_qrCount == 0)
+            _qrIndex = 0;
+        else if (_qrIndex >= _qrCount)
+            _qrIndex = _qrCount - 1;
+    }
     void nextQr();
 
     // let main.cpp tell the Contacts screen how many contacts exist, and
