@@ -54,7 +54,17 @@ public:
 
     // let main.cpp tell the Contacts screen how many contacts exist, and
     // cycle which one is shown (cycled with OK while open)
-    void setContactCount(int count) { _contactCount = count; }
+    void setContactCount(int count)
+    {
+        _contactCount = count < 0 ? 0 : count;
+
+        // The Chronos contact list can shrink after a sync. Keep the
+        // selected index inside the new list before drawContacts() reads it.
+        if (_contactCount == 0)
+            _contactIndex = 0;
+        else if (_contactIndex >= _contactCount)
+            _contactIndex = _contactCount - 1;
+    }
     void nextContact();
 
 private:
