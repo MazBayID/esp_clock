@@ -1,138 +1,75 @@
 # NEO CLOCK Development Roadmap
 
-Roadmap created from the static audit dated 2026-11-20.
+Baseline: production `main` at `1bcf8f2212ee4e0a5d1aa8e597ca70d44137aa1b` (2026-11-20).
 
 ## Guiding rules
 
-- Stabilize existing behavior before adding more features.
-- Keep `main` production-safe.
-- Develop in focused feature branches and review through pull requests.
-- Preserve the three firmware identities; parity does not require identical code.
-- Do not treat CI compilation as physical-device validation.
+- Stabilize existing behavior before adding features.
+- Keep `main` production-safe; use focused branches and PRs.
+- Preserve the three firmware identities; parity does not require identical implementations.
+- Never treat CI compilation as physical-device validation.
 - Keep the ESP32-C3 SuperMini pinout fixed unless a separately reviewed hardware change is approved.
-- Keep each task small enough to test and revert independently.
+- Keep each task small, testable, and independently revertible.
 
-## Stage 0 — Establish a trustworthy baseline
+## Stage 1 — Finish input and navigation validation
 
-**Goal:** know exactly which source and firmware package are being tested.
+- Physically test merged input/navigation behavior on all variants.
+- Complete PR #16 and PR #19 held-at-boot tests: boot while each TTP223 input is held, release it, and verify no action occurs until a new press.
+- Test rapid, slow, simultaneous, short, and long presses.
+- Verify menu entry, selection, back, and home from every relevant screen.
+- Confirm active navigation does not trap Mochi on one screen.
 
-Tasks:
-- Record the current production `main` SHA and all open firmware PRs.
-- Keep PR #13 open for review; do not merge based on CI alone.
-- Record board, OLED, touch, speaker, and microphone wiring for each physical test.
-- Confirm which device is available for testing and its exact TTP223 active level.
-- Capture baseline behavior and build artifacts for all three targets.
+**Exit criteria:** no repeated/missed actions in the agreed test sequence; each screen has a reliable return path.
 
-Exit criteria:
-- The source revision and firmware image used in every test are traceable.
-- The physical pinout and button polarity are confirmed.
-- No unreviewed source is flashed as production firmware.
+## Stage 2 — Time, connection, persistence, and startup
 
-## Stage 1 — Input and navigation stability
-
-**Priority: highest**
-
-Tasks:
-- Compare PREV/NEXT/MODE behavior across all targets.
-- Define a shared interaction contract: short press, long press, menu navigation, select, back, and home.
-- Use independent debouncing for each input; verify behavior with the real touch modules.
-- Test simultaneous/overlapping presses and long press while the screen is changing.
-- Review Mochi automatic screen overrides for navigation, notifications, and connection events.
-- Review PR #13 input state transitions and test all screen return paths.
-
-Suggested interaction contract:
-- PREV: previous item/screen.
-- NEXT: next item/screen.
-- MODE short: select/confirm or the screen's documented primary action.
-- MODE long: open menu from normal screens; return home from menu/detail states.
-- Every screen has an unambiguous way to return to its parent or home.
-
-Exit criteria:
-- No repeated/missed actions during the agreed button test sequence.
-- Menu entry, selection, back, and home work from every relevant screen.
-- Automatic events do not permanently trap the user or unexpectedly erase navigation context.
-
-## Stage 2 — Time, connection, persistence, and startup reliability
-
-Tasks:
 - Separate “connected”, “time valid”, and “last successful sync” state.
 - Test Wi-Fi loss/reconnect, NTP failure/recovery, BLE disconnect/reconnect, and Chronos time updates.
-- Verify NVS defaults, invalid stored values, write failure handling, and power-cycle restore.
+- Verify NVS defaults, invalid stored values, write failures, and power-cycle restoration.
 - Review OLED and I2S initialization return values and failure behavior.
-- Review blocking startup paths and determine which should become bounded or asynchronous.
-- Review Wi-Fi setup portal security and credential-storage threat model before production distribution.
+- Review blocking Wi-Fi startup paths and provisioning security.
 
-Exit criteria:
-- The clock never presents stale time as a fresh successful synchronization without a defined policy.
-- Settings survive reboot and invalid NVS data safely falls back to defaults.
-- Peripheral failures are detected and represented honestly.
-- Wi-Fi provisioning does not expose credentials to unintended local clients.
+**Exit criteria:** no stale time presented as a fresh sync; invalid settings safely fall back; peripheral failures are represented honestly.
 
-## Stage 3 — Chronos data feature stability
+## Stage 3 — Chronos data robustness
 
-Tasks:
-- Test notifications, weather, music, navigation, and phone information using real Chronos app payloads.
-- Validate empty lists, list shrink/growth, stale data after disconnect, long strings, and non-ASCII text.
-- Compare browsing behavior in via_chronos PR #13 with Mochi's glanceable single-item screens.
-- Decide which features should be common and which should remain Mochi-specific.
-- Add explicit music controls to Mochi only if user experience and hardware interaction justify it.
-- Resolve the Mochi Finding Phone screen/timer path if the screen is intended to be a real feature.
+- Test notifications, weather, music, navigation, phone information, contacts, and QR payloads from the Chronos app.
+- Validate empty lists, list shrink/growth, stale data after disconnect, malformed payloads, long strings, and non-ASCII text.
+- Decide whether Mochi's glanceable item-0 presentation is intentional or whether browsing is required.
+- Treat QR feature retention/removal as a separate product decision; bounds hardening does not imply that the feature must remain.
 
-Exit criteria:
-- No out-of-range list access or misleading screen state in tested payload conditions.
-- Each feature has a defined empty/stale/disconnected presentation.
-- Parity decisions are documented before implementation.
+**Exit criteria:** no out-of-range access; every screen has defined empty, stale, and disconnected states.
 
 ## Stage 4 — Feature parity and product boundaries
 
-Tasks:
-- Convert the feature matrix into approved common/variant-exclusive requirements.
-- Preserve Wi-Fi provisioning and NTP as via_wifi-specific.
-- Preserve animated moods, sound personality, contacts/SOS, and other deliberate companion behaviors as Mochi-specific where appropriate.
-- Decide which Chronos data screens belong in the simpler via_chronos experience.
-- Review QR/link relay with the user; the current feature has low user value and should not be retained merely because it exists.
-
-Exit criteria:
-- Every feature is classified as shared, variant-exclusive, deferred, or removed.
-- Each implementation has a test plan and no duplicated work is started before the classification.
+- Keep Wi-Fi provisioning/NTP as via_wifi-specific.
+- Keep Mochi animated moods, companion audio, contacts/SOS, and other deliberate identity features variant-specific where appropriate.
+- Decide which additional Chronos data features belong in the simpler via_chronos experience.
+- Convert the matrix into approved shared, variant-exclusive, deferred, and removed requirements before implementation.
 
 ## Stage 5 — UI and asset consistency
 
-Tasks:
 - Wait until screen structure and navigation are stable.
-- Standardize typography, spacing, labels, status indicators, and menu affordances where the displays have similar needs.
-- Add/reuse icons only where they improve readability on a 128x64 monochrome OLED.
-- Keep Mochi animation and personality distinct.
-- Verify memory/flash impact of generated assets and ensure each target's asset generation remains isolated.
+- Standardize typography, spacing, labels, status indicators, and menu affordances where useful.
+- Add icons only where they improve readability on the 128x64 monochrome OLED.
+- Verify memory/flash impact and keep asset generation deterministic and target-specific.
 
-Exit criteria:
-- No clipping/overlap on the physical OLED.
-- UI changes do not alter navigation semantics or regress clock rendering.
-- Asset generation remains deterministic and target-specific.
+## Stage 6 — Regression and merge gates
 
-## Stage 6 — Regression, release, and merge
-
-For each PR:
-1. Review the diff and confirm only the intended target/paths changed.
-2. Run GPIO validation and repository tests.
+For every PR:
+1. Review the diff and confirm only intended paths changed.
+2. Run repository checks and GPIO validation where relevant.
 3. Build the modified target.
-4. Build all unaffected targets as regression checks.
-5. Inspect packaging and artifact contents.
-6. Flash and test the physical ESP32-C3.
-7. Record firmware SHA, board, test steps, observed results, and remaining limitations.
-8. Merge only after review and required device checks.
+4. Build unaffected targets as regression checks.
+5. Inspect packaging/artifact contents where applicable.
+6. Flash and test the physical ESP32-C3 for hardware-sensitive behavior.
+7. Record source SHA, firmware artifact, board, test steps, results, and limitations.
+8. Merge only when CI, review, and required device checks pass.
 
-Release gates:
-- CI passes for the relevant target and regression targets.
-- No unresolved high-priority static findings remain in changed code.
-- Physical input, display, connectivity/time, and target-specific features pass their test cases.
-- README and feature matrix match the shipped firmware.
-- `main` remains the production branch; no untested feature is merged.
+## Immediate execution order
 
-## First execution sequence
-
-1. Complete the physical input/navigation test plan for all three variants.
-2. Review PR #13 in isolation and prepare a device test checklist; do not merge yet.
-3. Stabilize via_wifi input debounce and provisioning/startup concerns in separate scoped PRs.
-4. Stabilize Mochi screen override and data behavior without adding new features.
-5. Re-run cross-variant comparison and approve parity requirements.
+1. Complete the physical held-at-boot tests for PR #16 and PR #19.
+2. Test the remaining navigation, data-list, persistence, and reconnect edge cases.
+3. Address high-priority Wi-Fi provisioning and startup risks in separate PRs.
+4. Re-run the feature/stability audit after each meaningful stabilization batch.
+5. Only then expand feature parity or undertake UI/icon redesign.
