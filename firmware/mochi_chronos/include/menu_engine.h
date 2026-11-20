@@ -16,6 +16,7 @@ enum MenuItem
     MENU_IDLE_TIMEOUT,
     MENU_MOOD_FREQUENCY,
     MENU_RESET_PAIRING,
+    MENU_FIND_PHONE,
     MENU_DEVICE_INFO,
     MENU_COUNT // keep last
 };
@@ -40,6 +41,12 @@ public:
     // instead of "exit menu" while it's showing.
     bool isShowingDetail() const { return _showingDetail; }
     void closeDetail() { _showingDetail = false; }
+    bool consumeFindPhoneRequest()
+    {
+        const bool requested = _findPhoneRequested;
+        _findPhoneRequested = false;
+        return requested;
+    }
 
     // Sound mode (menu item "Sound"): 0 = OFF, 1 = ALRT (message / call /
     // navigation / alarm only), 2 = ALL (alerts + face effects: blink,
@@ -68,6 +75,7 @@ private:
     uint8_t _idleTimeoutIdx = 1;  // index into IDLE_TIMEOUT_PRESETS_MIN (default 5 min)
     uint8_t _moodFreqIdx = 2;     // index into SPRITE_SHOW_PRESETS_* (default Normal)
     bool _showingDetail = false;
+    bool _findPhoneRequested = false;
 
     // transient one-line status shown after an action (e.g. "Saved")
     String _statusMsg;
