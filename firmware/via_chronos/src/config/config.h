@@ -60,6 +60,7 @@ void setupChronos();
 void updateChronos();
 void setupInput();
 void updateInput();
+void persistChronosTimeFormat();
 void renderDisplay();
 void setupDisplay();
 
