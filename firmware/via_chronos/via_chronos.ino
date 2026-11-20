@@ -36,6 +36,7 @@ void setup() {
 void loop() {
   updateChronos();
   updateInput();
+  updateChronosNotificationPopup();
 
   const unsigned long now = millis();
   if (now - lastDisplayUpdate >= DISPLAY_REFRESH_MS) {
