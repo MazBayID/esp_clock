@@ -17,6 +17,8 @@ void onChronosConfiguration(Config config, uint32_t value1, uint32_t value2) {
     chronosTimeChanged = true;
     Serial.print(F("Chronos time synced: "));
     Serial.println(watch.getTimeDate());
+  } else if (config == CF_HR24) {
+    chronos24Hour = watch.is24Hour();
   }
 }
 
@@ -33,7 +35,7 @@ void setupChronos() {
   watch.setNotificationCallback(onChronosNotification);
   watch.setConfigurationCallback(onChronosConfiguration);
 
-  watch.set24Hour(true);
+  watch.set24Hour(chronos24Hour);
   watch.begin();
 
   Serial.print(F("NEO CLOCK BLE address: "));
