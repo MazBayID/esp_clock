@@ -18,7 +18,7 @@ void onChronosConfiguration(Config config, uint32_t value1, uint32_t value2) {
     Serial.print(F("Chronos time synced: "));
     Serial.println(watch.getTimeDate());
   } else if (config == CF_HR24) {
-    chronos24Hour = watch.is24Hour();
+    persistChronosTimeFormat();
   }
 }
 
