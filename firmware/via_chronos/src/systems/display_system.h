@@ -83,7 +83,7 @@ void renderChronosMenu() {
   display.drawFastHLine(0, 11, SCREEN_WIDTH, SSD1306_WHITE);
 
   for (uint8_t i = 0; i < 5; ++i) {
-    const int y = 16 + i * 13;
+    const int y = 14 + i * 9;
     if (chronosMenuSelection == i) {
       display.fillRect(0, y - 1, SCREEN_WIDTH, 11, SSD1306_WHITE);
       display.setTextColor(SSD1306_BLACK);
@@ -98,8 +98,6 @@ void renderChronosMenu() {
     }
   }
 
-  display.setCursor(0, 56);
-  display.print(F("PREV/NEXT  OK:OPEN"));
 }
 
 void renderClockStyleScreen() {
