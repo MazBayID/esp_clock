@@ -463,7 +463,14 @@ void loop()
                 menu.moveNext();
 
             if (okEv == BTN_SHORT_PRESS)
+            {
                 menu.activate();
+                if (menu.consumeFindPhoneRequest())
+                {
+                    findingPhoneUntil = millis() + FINDING_PHONE_DISPLAY_MS;
+                    ui.goTo(SCR_FINDING);
+                }
+            }
 
             // Match via_wifi: holding MODE exits the menu to the main face.
             if (okEv == BTN_LONG_PRESS)
