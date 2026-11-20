@@ -7,7 +7,6 @@ Separate BLE firmware for the existing NEO CLOCK hardware. This build does not m
 - Chronos Android app: [Google Play Store](https://play.google.com/store/apps/details?id=com.fbiego.chronos)
 - Chronos website: [chronos.ke](https://chronos.ke/)
 - Official ESP32 library: [fbiego/chronos-esp32](https://github.com/fbiego/chronos-esp32)
-- Additional hardware/reference project: [Dirgamochi-C3 v0.7.0](https://github.com/MazBayID/Dirgamochi-C3_v0.7.0--BiG-Update)
 
 The Chronos app and the official ChronosESP32 library are the BLE integration references. Dirgamochi-C3 is an additional reference for reviewing compatible hardware/firmware ideas; its implementation must not be copied blindly or allowed to change the fixed NEO CLOCK pinout.
 
