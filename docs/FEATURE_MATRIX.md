@@ -1,69 +1,51 @@
 # NEO CLOCK Firmware Feature Matrix
 
-Audit snapshot: 2026-11-20
+Audit baseline: production `main` at `1bcf8f2212ee4e0a5d1aa8e597ca70d44137aa1b` (2026-11-20).
 
-## Scope and interpretation
-
-This matrix separates the production `main` branch from the open `via_chronos` PR #13. PR #13 is not part of production `main` and must not be treated as released firmware.
-
-Status meanings:
-- **Present**: implementation is visible in the inspected source.
-- **Partial**: some of the feature exists, but behavior or coverage is limited.
-- **Pending PR #13**: present only in the open development branch.
-- **Not present**: no implementation found in the inspected target.
-- **Hardware validation pending**: code/build evidence is not proof of physical behavior.
+This is a source-level comparison. “Implemented” means present in source; it does not by itself prove reliable behavior on physical hardware.
 
 ## Feature comparison
 
-| Capability | via_wifi (main) | via_chronos (main) | via_chronos (PR #13) | mochi_chronos (main) |
-|---|---|---|---|---|
-| Primary connection | Wi-Fi | Chronos BLE | Chronos BLE | Chronos BLE |
-| Clock/time source | NTP over Wi-Fi | Chronos phone sync | Chronos phone sync | Chronos phone sync |
-| Six clock digit styles | Present | Present | Present | Animated face + text clock; six-style digit UI not used |
-| 12/24-hour setting | Not exposed; uses local time | Fixed to 24-hour at startup | Present and persisted | Present and persisted |
-| Clock-style persistence | Present (Preferences) | Not present | Present (Preferences) | Not applicable to current animated face |
-| Main menu | 3-item menu | Not present | 8-item menu | 8-item settings menu |
-| Button debounce | MODE only; PREV/NEXT use raw edge transitions | 180 ms global edge lockout, no per-button debounce | 35 ms per-button debounce | 35 ms per-button debounce |
-| MODE short/long actions | Present | Not present | Present | Present |
-| Wi-Fi setup portal | Present | Not applicable | Not applicable | Not applicable |
-| Saved Wi-Fi profiles | Present, up to five | Not applicable | Not applicable | Not applicable |
-| BLE status | Not applicable | Connection state on clock | Dedicated BLE status screen | Phone/status screen |
-| Notifications | Not present | Callback logs notification | Browsable notification screen | Auto-displayed notification screen; currently renders item 0 |
-| Weather | Not present | Not present | Browsable weather screen | Weather screen; currently renders item 0 |
-| Music metadata | Not present | Not present | Present | Present |
-| Music controls | Not present | Not present | Previous/next/play-pause | No equivalent track controls found in current button routing |
-| Navigation | Not present | Not present | Text/data screen | Icon + text + audio turn cues |
-| Phone battery/charging/model | Not present | Not present | Phone information screen | Phone screen and device information |
-| Contacts/SOS | Not present | Not present | Not present | Present |
-| QR/link relay | Not present | Not present | Not present | Present; user has indicated this is not useful |
-| Alarm/call alerts | Hourly clock beep | Not present | Not present | Alarm and incoming-call sound handling |
-| Sound settings | Basic beep | Not present | Not present | OFF/ALRT/ALL, volume, speaker effects |
-| Display rotation setting | Fixed | Fixed | Fixed | Present and persisted |
-| Idle/ambient behavior | Not present | Not present | Not present | Present; idle/quiet-hours clock and animated moods |
-| Optional microphone | Not implemented | Not enabled | Not enabled | Experimental full-duplex path; disabled by default |
-| Speaker output | I2S beep | No active audio UI | No active audio UI | I2S speaker beep enabled; full voice/mic path disabled by default |
-| Settings persistence | Clock style | None in production main | Clock style + time format | Multiple settings in NVS |
+| Capability | via_wifi | via_chronos | mochi_chronos |
+|---|---|---|---|
+| Primary connection/time source | Wi-Fi + NTP | Chronos BLE + phone time | Chronos BLE + phone time |
+| Main presentation | Six-style digital clock | Six-style digital clock | Animated Mochi face + clock/data screens |
+| Wi-Fi provisioning and saved networks | Implemented | Not applicable | Not applicable |
+| BLE connection/status | Not applicable | Implemented | Implemented |
+| PREV/NEXT/MODE navigation | Debounced input; Wi-Fi/menu context actions | Debounced input; menu and screen navigation | Debounced input; screen/menu actions |
+| Clock style / time format persistence | Clock style | Clock style and 12/24-hour format | Multiple UI settings including time format |
+| Menu/settings | Compact menu | Eight-item menu | Settings menu |
+| Notifications | Not applicable | Notification browser | Notification screen |
+| Weather | Not applicable | Weather browser | Weather screen |
+| Music | Not applicable | Metadata and previous/next/play-pause controls | Metadata/status; no equivalent full track-control set confirmed |
+| Navigation | Not applicable | Navigation data screen | Navigation screen and audio cues |
+| Phone information | Not applicable | Phone information screen | Phone/device information |
+| Contacts / SOS | Not applicable | Not implemented | Implemented |
+| QR/link relay | Not applicable | Not implemented | Implemented; usefulness remains a separate product decision |
+| Find Phone | Not applicable | Not implemented | Menu action implemented; device test confirmed |
+| Alarm / incoming call handling | Hourly chime | Not implemented | Implemented |
+| Speaker output | I2S beep | No active audio feature | I2S speaker effects; experimental microphone/full-duplex path disabled by default |
+| OLED rotation setting | Fixed | Fixed | Configurable and persisted |
 
-## Intended product identities
+## Product boundaries
 
-- **via_wifi** remains the standalone Wi-Fi/NTP clock, including network provisioning and saved network profiles.
-- **via_chronos** remains the simpler Chronos BLE clock, with the shared clock UI and a curated subset of Chronos data screens.
-- **mochi_chronos** remains the companion-style firmware, with animated moods, audio personality, contacts/SOS and its richer settings.
+- **via_wifi** remains the standalone Wi-Fi/NTP clock. Wi-Fi provisioning and network recovery are not missing BLE parity features.
+- **via_chronos** remains the simpler Chronos BLE clock with a curated set of phone-data screens and music controls.
+- **mochi_chronos** remains the companion-style firmware with animated moods, audio personality, contacts/SOS, and richer settings.
 
-Feature parity does not mean identical source code or identical screen count. A feature should be shared only where its data source, hardware needs, and user experience make sense in all relevant variants.
+Parity does not require identical screens or source code. Share behavior only when connectivity, hardware, and user experience genuinely align.
 
-## Immediate alignment opportunities
+## Recent merged changes represented in this baseline
 
-1. Standardize physical button semantics and input reliability across all three variants.
-2. Standardize return/back behavior, menu entry, and screen navigation conventions.
-3. Define a common meaning for connection state, last successful time sync, and stale data.
-4. Align empty-data and invalid-data presentation for notifications, weather, music, navigation, and phone information.
-5. Decide which Chronos data features belong in the standard `via_chronos` experience after PR #13 is reviewed and device-tested.
-6. Keep Mochi-exclusive animation/audio/personality features separate where they are part of its identity.
-7. Revisit QR/link relay. It is currently implemented in Mochi, but the user has stated it has little practical value; no removal is made by this audit.
+- PR #13: via_chronos settings, notification/weather/music/navigation/phone screens.
+- PR #15: via_wifi PREV/NEXT debounce.
+- PR #20: Mochi navigation no longer forcibly locks the display to its screen; new navigation events can still bring it forward.
+- PR #21: Mochi Find Phone menu action.
+- PR #17: clamp Mochi contact index when the synchronized list shrinks or becomes empty.
+- PR #18: validate incoming QR link indices and clamp QR count/index to the fixed array bounds.
 
-## Evidence and limits
+## Remaining validation
 
-The comparison is based on source inspection of repository `main` at `edbdda1de332347ef5774711e035ae63deee0780`, plus the open PR #13 head at `9ab5ba289be2a38588c0212be3c77a5d8a573dcc`.
-
-The PR #13 CI runs for `via_chronos` and the `via_wifi` regression workflow completed successfully. No physical-device validation is implied. Mochi feature descriptions should be considered implementation presence, not proof of stable runtime behavior.
+- PR #16 (Mochi) and PR #19 (via_chronos): held-at-boot touch input behavior still requires physical testing on the actual TTP223 hardware.
+- CI builds do not prove BLE pairing, data relay, input feel, audio, or OLED behavior.
+- QR feature retention/removal is a product decision; PR #18 only hardens its bounds handling.
