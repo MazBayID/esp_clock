@@ -37,7 +37,7 @@
 #define MODE_LONG_PRESS_MS 700
 
 // Screen IDs used by the compact settings/navigation UI.
-enum ChronosScreen : uint8_t {
+enum ChronosUiScreen : uint8_t {
   CHRONOS_SCREEN_CLOCK = 0,
   CHRONOS_SCREEN_MENU,
   CHRONOS_SCREEN_STYLE,
