@@ -1935,8 +1935,10 @@ void ChronosESP32::dataReceived()
 		case 0xA8:
 			if (_incomingData.data[3] == 0xFE)
 			{
-				// end of qr data
-				int size = _incomingData.data[5]; // number of links received
+				// End of QR data. The protocol stores at most CS_QR_SIZE links.
+				int size = _incomingData.data[5];
+				if (size > CS_QR_SIZE)
+					size = CS_QR_SIZE;
 				if (configurationReceivedCallback != nullptr)
 				{
 					configurationReceivedCallback(CF_QR, 1, size);
@@ -1944,16 +1946,19 @@ void ChronosESP32::dataReceived()
 			}
 			if (_incomingData.data[3] == 0xFF)
 			{
-				// receiving qr data
-				int index = _incomingData.data[5]; // index of the curent link
-				_qrLinks[index] = "";			   // clear existing
-				for (int i = 6; i < len; i++)
+				// Ignore malformed/out-of-range link indices before indexing the fixed array.
+				int index = _incomingData.data[5];
+				if (index >= 0 && index < CS_QR_SIZE)
 				{
-					_qrLinks[index] += (char)_incomingData.data[i];
-				}
-				if (configurationReceivedCallback != nullptr)
-				{
-					configurationReceivedCallback(CF_QR, 0, index);
+					_qrLinks[index] = "";
+					for (int i = 6; i < len; i++)
+					{
+						_qrLinks[index] += (char)_incomingData.data[i];
+					}
+					if (configurationReceivedCallback != nullptr)
+					{
+						configurationReceivedCallback(CF_QR, 0, index);
+					}
 				}
 			}
 			break;
